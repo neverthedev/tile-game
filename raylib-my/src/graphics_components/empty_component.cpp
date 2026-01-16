@@ -1,22 +1,11 @@
-#ifndef EMPTY_GRAPHICS_COMPONENT
-#define EMPTY_GRAPHICS_COMPONENT
+#include "empty_component.h"
 
-#include "./component.cpp"
-#include "../graphics.cpp"
-#include "../game_world.cpp"
+#include "../graphics.h"
 
-class EmptyGraphicsComponent: public GraphicsComponent {
-  public:
-    EmptyGraphicsComponent(): GraphicsComponent() {};
-    virtual void Render(GameObject&, Graphics&) override;
-    ~EmptyGraphicsComponent() override {};
-
-  private:
-
-};
+EmptyGraphicsComponent::EmptyGraphicsComponent(): GraphicsComponent() {}
 
 void EmptyGraphicsComponent::Render(GameObject& wld, Graphics& graphics) {
   // Do nothing here
 }
 
-#endif // EMPTY_GRAPHICS_COMPONENT
+EmptyGraphicsComponent::~EmptyGraphicsComponent() {}

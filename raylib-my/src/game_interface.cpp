@@ -1,32 +1,4 @@
-#ifndef GAME_INTERFACE_H
-#define GAME_INTERFACE_H
-
-#include <vector>
-#include "raylib.h"
-#include "common/game_area.cpp"
-#include "managers/tiles_manager.cpp"
-#include "game_world.cpp"
-#include "menus/menu.cpp"
-#include "menus/factory.cpp"
-
-class GameInterface: public GameObject {
-  public:
-    GameInterface(int, int);
-    void AddArea(GameObject&, Rectangle2D, int);
-    virtual void HandleInput() override;
-    virtual void Update() override;
-    virtual void Render(Graphics& grph) override;
-    void LoadTextures(Graphics& grph);
-
-    ~GameInterface();
-  private:
-    int screenWidth;
-    int screenHeight;
-    std::vector<GameArea*> gameAreas;
-    TilesManager tilesManager;
-    GameWorld gameWorld;
-    Menu* currentMenu;
-};
+#include "game_interface.h"
 
 GameInterface::GameInterface(int w, int h):
   screenWidth { w },
@@ -93,5 +65,3 @@ GameInterface::~GameInterface() {
     delete area;
   }
 }
-
-#endif // GAME_INTERFACE_H

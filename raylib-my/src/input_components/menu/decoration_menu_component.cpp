@@ -1,17 +1,8 @@
-#ifndef DECORATION_MENU_INPUT_COMPONENT
-#define DECORATION_MENU_INPUT_COMPONENT
+#include "decoration_menu_component.h"
 
-#include "../component.cpp"
-#include "../../common/game_object.cpp"
-#include "../../common/game_error.cpp"
-#include "../../menus/decoration_menu.cpp"
-
-class DecorationMenuInputComponent: public InputComponent {
-  public:
-    DecorationMenuInputComponent();
-    void virtual HandleInput(GameObject&) override;
-    ~DecorationMenuInputComponent();
-};
+#include "../../common/game_object.h"
+#include "../../common/game_error.h"
+#include "../../menus/decoration_menu.h"
 
 DecorationMenuInputComponent::DecorationMenuInputComponent(): InputComponent() {}
 
@@ -22,5 +13,3 @@ void DecorationMenuInputComponent::HandleInput(GameObject& menu) {
 }
 
 DecorationMenuInputComponent::~DecorationMenuInputComponent() {}
-
-#endif // DECORATION_MENU_INPUT_COMPONENT

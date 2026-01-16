@@ -1,23 +1,6 @@
-#ifndef NAMAGERS_TILES_MANAGER
-#define NAMAGERS_TILES_MANAGER
+#include "tiles_manager.h"
 
-#include <unordered_map>
-#include "../world_tiles/tile.cpp"
-#include "../world_tiles/tile_terrain_type.cpp"
-#include "../graphics.cpp"
-
-class TilesManager {
-  public:
-    TilesManager();
-    void LoadTextures(Graphics&);
-    WorldTile* NewTile(std::string, Position2D) const;
-    std::vector<std::string> TileTypes() const;
-    ~TilesManager();
-    const std::unordered_map<std::string, WorldTileTerrainType> &TileTypes();
-  private:
-    const WorldTileTerrainType& Type(std::string) const;
-    std::unordered_map<std::string, WorldTileTerrainType> tileTypes;
-};
+#include "../graphics.h"
 
 TilesManager::TilesManager() {
   std::string txr = "../../textures/terrain-1.png";
@@ -61,5 +44,3 @@ TilesManager::~TilesManager() {
     UnloadTexture(tileType.Texture());
   }
 }
-
-#endif // NAMAGERS_TILES_MANAGER

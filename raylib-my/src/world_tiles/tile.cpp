@@ -1,34 +1,4 @@
-#ifndef WORLD_TILES_TILE
-#define WORLD_TILES_TILE
-
-#include "../common/position_2d.cpp"
-#include "../common/game_object.cpp"
-#include "../graphics.cpp"
-#include "tile_terrain_type.cpp"
-#include "decorations/decoration.cpp"
-#include "resources/resource.cpp"
-
-class WorldTile: GameObject { // Tile is a typed object of type TerrainType
-  friend class WorldTileTerrainType;
-
-  public:
-    bool Dirty;
-    Position2D Pos;
-    WorldTileDecoration* Decoration;
-    WorldTileResource* Resource;
-    int MowementSpeed;
-
-    virtual void HandleInput() override;
-    virtual void Update() override;
-    virtual void Render(Graphics&) override;
-    virtual ~WorldTile();
-    const Texture2D& Texture() const;
-    const Image& TextureImage() const;
-  private:
-    WorldTile(const WorldTileTerrainType&, Position2D);
-    const WorldTileTerrainType& TerrainType;
-    void drawIsoTileFrame(Graphics&);
-};
+#include "tile.h"
 
 WorldTile::WorldTile(const WorldTileTerrainType& type, Position2D pos):
   GameObject(),
@@ -52,7 +22,7 @@ void WorldTile::HandleInput() {
 void WorldTile::Update() {
   //Dirty = true;
   // For example, grow the tree
-};
+}
 
 void WorldTile::drawIsoTileFrame(Graphics& grph) {
   Position2D center = grph.GridToScreen(Pos);
@@ -70,12 +40,10 @@ void WorldTile::drawIsoTileFrame(Graphics& grph) {
 void WorldTile::Render(Graphics& grph) {
   Dirty = false;
   drawIsoTileFrame(grph);
-};
+}
 
 WorldTile::~WorldTile() {}
 
 WorldTile* WorldTileTerrainType::NewTile(Position2D pos) const {
   return new WorldTile(*this, pos);
 }
-
-#endif // WORLD_TILES_TILE

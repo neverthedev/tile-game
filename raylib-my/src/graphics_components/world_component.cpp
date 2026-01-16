@@ -1,26 +1,11 @@
-#ifndef WORLD_GRAPHICS_COMPONENT
-#define WORLD_GRAPHICS_COMPONENT
+#include "world_component.h"
 
 #include "raylib.h"
-#include "../common/game_error.cpp"
-#include "./component.cpp"
-#include "../graphics.cpp"
-#include "../game_world.cpp"
-#include "../world_tiles/tile.cpp"
 
-class GameWorld;
-class WorldGraphicsComponent: public GraphicsComponent {
-  public:
-    WorldGraphicsComponent();
-    virtual void Render(GameObject&, Graphics&) override;
-    ~WorldGraphicsComponent() override;
-
-  private:
-    void drawIsoTileFrame(Graphics&, Position2D);
-    Image worldTileMap;
-    Texture2D mapTexture;
-    bool initialized;
-};
+#include "../common/game_error.h"
+#include "../graphics.h"
+#include "../game_world.h"
+#include "../world_tiles/tile.h"
 
 WorldGraphicsComponent::WorldGraphicsComponent():
   GraphicsComponent(),
@@ -74,5 +59,3 @@ void WorldGraphicsComponent::Render(GameObject& wld, Graphics& grph) {
 }
 
 WorldGraphicsComponent::~WorldGraphicsComponent() {}
-
-#endif // WORLD_GRAPHICS_COMPONENT

@@ -1,17 +1,8 @@
-#ifndef DECORATION_MENU_UPDATE_COMPONENT
-#define DECORATION_MENU_UPDATE_COMPONENT
+#include "decoration_menu_component.h"
 
-#include "../component.cpp"
-#include "../../common/game_object.cpp"
-#include "../../common/game_error.cpp"
-#include "../../menus/decoration_menu.cpp"
-
-class DecorationMenuUpdateComponent: public UpdateComponent {
-  public:
-    DecorationMenuUpdateComponent();
-    void virtual Update(GameObject&) override;
-    ~DecorationMenuUpdateComponent();
-};
+#include "../../common/game_object.h"
+#include "../../common/game_error.h"
+#include "../../menus/decoration_menu.h"
 
 DecorationMenuUpdateComponent::DecorationMenuUpdateComponent(): UpdateComponent() {}
 
@@ -21,5 +12,3 @@ void DecorationMenuUpdateComponent::Update(GameObject& menu) {
 }
 
 DecorationMenuUpdateComponent::~DecorationMenuUpdateComponent() {}
-
-#endif // DECORATION_MENU_UPDATE_COMPONENT

@@ -1,17 +1,8 @@
-#ifndef CAMERA_INPUT_COMPONENT_H
-#define CAMERA_INPUT_COMPONENT_H
+#include "camera_component.h"
 
-#include "component.h"
-#include "../common/game_error.cpp"
-#include "../common/game_object.cpp"
-#include "../game_camera.cpp"
+#include "../game_camera.h"
 
-class CameraInputComponent: public InputComponent {
-  public:
-    CameraInputComponent(): InputComponent() {};
-    virtual void HandleInput(GameObject&) override;
-    ~CameraInputComponent() override {};
-};
+CameraInputComponent::CameraInputComponent(): InputComponent() {}
 
 void CameraInputComponent::HandleInput(GameObject &cam) {
   GameCamera* camera = dynamic_cast<GameCamera*>(&cam);
@@ -40,6 +31,6 @@ void CameraInputComponent::HandleInput(GameObject &cam) {
     camera->target.x += (worldBefore.x - worldAfter.x);
     camera->target.y += (worldBefore.y - worldAfter.y);
   }
-};
+}
 
-#endif // CAMERA_INPUT_COMPONENT_H
+CameraInputComponent::~CameraInputComponent() {}

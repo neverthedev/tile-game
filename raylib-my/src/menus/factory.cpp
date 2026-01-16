@@ -1,17 +1,8 @@
-#ifndef MENU_FACTORY_H
-#define MENU_FACTORY_H
+#include "factory.h"
 
-#include "menu.cpp"
-#include "decoration_menu.cpp"
-#include "../managers/tiles_manager.cpp"
-#include "../input_components/menu/decoration_menu_component.cpp"
-#include "../update_components/menu/decoration_menu_component.cpp"
-#include "../graphics_components/menu/decoration_menu_component.cpp"
-
-class MenuFactory {
-  public:
-    static DecorationMenu& CreateDecorationMenu(Rectangle2D, TilesManager&);
-};
+#include "../input_components/menu/decoration_menu_component.h"
+#include "../update_components/menu/decoration_menu_component.h"
+#include "../graphics_components/menu/decoration_menu_component.h"
 
 DecorationMenu& MenuFactory::CreateDecorationMenu(Rectangle2D pos, TilesManager& mngr) {
   DecorationMenuInputComponent* inp_cmp = new DecorationMenuInputComponent();
@@ -21,5 +12,3 @@ DecorationMenu& MenuFactory::CreateDecorationMenu(Rectangle2D pos, TilesManager&
   DecorationMenu* decorationMenu = new DecorationMenu(pos, mngr, *inp_cmp, *upd_cmp, *grph_cmp);
   return *decorationMenu;
 }
-
-#endif // MENU_FACTORY_H

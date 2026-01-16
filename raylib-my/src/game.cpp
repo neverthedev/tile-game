@@ -1,10 +1,10 @@
 #include <cmath>
 #include <iostream>
 
-#include "common/game_error.cpp"
-#include "menus/factory.cpp"
-#include "graphics.cpp"
-#include "game_interface_.cpp"
+#include "common/game_error.h"
+#include "menus/factory.h"
+#include "graphics.h"
+#include "game_interface.h"
 
 const float TILE_W = 64.0f;
 const float TILE_H = 32.0f;

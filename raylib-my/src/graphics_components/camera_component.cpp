@@ -1,20 +1,10 @@
-#ifndef CAMERA_GRAPHICS_COMPONENT
-#define CAMERA_GRAPHICS_COMPONENT
+#include "camera_component.h"
 
-#include "./component.cpp"
-#include "../graphics.cpp"
-#include "../game_camera.cpp"
-#include "../common/game_error.cpp"
+#include "../graphics.h"
+#include "../game_camera.h"
+#include "../common/game_error.h"
 
-class CameraGraphicsComponent: public GraphicsComponent {
-  public:
-    CameraGraphicsComponent(): GraphicsComponent() {};
-    virtual void Render(GameObject&, Graphics&) override;
-    ~CameraGraphicsComponent() override {};
-
-  private:
-
-};
+CameraGraphicsComponent::CameraGraphicsComponent(): GraphicsComponent() {}
 
 void CameraGraphicsComponent::Render(GameObject& cam, Graphics& grph) {
   GameCamera *camera = dynamic_cast<GameCamera *>(&cam);
@@ -26,4 +16,4 @@ void CameraGraphicsComponent::Render(GameObject& cam, Graphics& grph) {
   grph.camera.zoom = camera->zoom;
 }
 
-#endif // CAMERA_GRAPHICS_COMPONENT
+CameraGraphicsComponent::~CameraGraphicsComponent() {}

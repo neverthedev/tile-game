@@ -1,36 +1,6 @@
-#ifndef WORLD_TERRAIN_TYPE
-#define WORLD_TERRAIN_TYPE
+#include "tile_terrain_type.h"
 
 #include <iostream>
-#include <string>
-#include "../common/game_error.cpp"
-#include "../graphics.cpp"
-#include "../common/position_2d.cpp"
-
-class WorldTile;
-class WorldTileTerrainType {
-  friend class WorldTile;
-
-  public:
-    WorldTileTerrainType(std::string, float, bool, std::string, Rectangle);
-    WorldTile* NewTile(Position2D) const;
-    ~WorldTileTerrainType();
-    void LoadTexture(Graphics& grph);
-    const Texture2D& Texture() const;
-    const Image& TextureImage() const;
-
-  private:
-    std::string name;
-    std::string texurePath;
-    bool isWater;
-    float baseMovingSpeed;
-    Rectangle textureSrcRect;
-    Texture2D textureObj;
-    Image textureImage;
-    bool initialized;
-
-    bool emptyTextureSrcRect();
-};
 
 WorldTileTerrainType::WorldTileTerrainType(std::string nm, float spd, bool wtr, std::string txr, Rectangle srcRect):
   name { nm },
@@ -69,5 +39,3 @@ const Image& WorldTileTerrainType::TextureImage() const {
 }
 
 WorldTileTerrainType::~WorldTileTerrainType() {}
-
-#endif // WORLD_TERRAIN_TYPE

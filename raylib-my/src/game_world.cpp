@@ -1,50 +1,7 @@
-#ifndef GAME_WORLD_H
-#define GAME_WORLD_H
+#include "game_world.h"
 
-#include <vector>
-#include <map>
-
-#include "graphics.cpp"
-#include "common/game_error.cpp"
-#include "common/game_object.cpp"
-#include "managers/tiles_manager.cpp"
-#include "game_camera.cpp"
-#include "input_components/component.h"
-#include "graphics_components/component.cpp"
-#include "input_components/camera_component.cpp"
-#include "graphics_components/camera_component.cpp"
-#include "world_tiles/tile.cpp"
-
-class GameWorld: public GameObject {
-  public:
-    int MapWidth;
-    int MapHeight;
-
-    static GameWorld NewWorld(int, int, const TilesManager&);
-
-    GameWorld(int w, int h, const TilesManager&, InputComponent&, GraphicsComponent&);
-    WorldTile& operator[](Position2D);
-    WorldTile* begin();
-    WorldTile* end();
-
-    void HandleInput() override;
-    void Update() override;
-    void Render(Graphics&) override;
-    const TilesManager& GetTilesManager();
-    ~GameWorld();
-  private:
-    InputComponent& input;
-    GraphicsComponent& render;
-    GameCamera* camera;
-    bool initialized;
-    std::vector<WorldTile> grid;
-    const TilesManager& tilesManager;
-
-    void initializeGrid();
-    void initializeTyleTypes();
-
-    void afterScreenInitialization(Graphics& graphics);
-};
+#include "input_components/camera_component.h"
+#include "graphics_components/camera_component.h"
 
 GameWorld::GameWorld(int w, int h, const TilesManager& tileMnr, InputComponent& c_inp, GraphicsComponent& c_rnd):
   MapWidth { w },
@@ -121,10 +78,10 @@ const TilesManager& GameWorld::GetTilesManager() {
 GameWorld::~GameWorld() {
   delete &input;
   delete &render;
-};
+}
 
-#include "graphics_components/world_component.cpp"
-#include "input_components/world_component.cpp"
+#include "graphics_components/world_component.h"
+#include "input_components/world_component.h"
 
 GameWorld GameWorld::NewWorld(int w, int h, const TilesManager& tileMngr) {
   WorldInputComponent* ic = new WorldInputComponent{};
@@ -132,5 +89,3 @@ GameWorld GameWorld::NewWorld(int w, int h, const TilesManager& tileMngr) {
 
   return { w, h, tileMngr, *ic, *gc };
 }
-
-#endif // GAME_WORLD_H

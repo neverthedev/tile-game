@@ -1,20 +1,10 @@
-#ifndef DECORATION_MENU_GRAPHICS_COMPONENT
-#define DECORATION_MENU_GRAPHICS_COMPONENT
+#include "decoration_menu_component.h"
 
-#include "../component.cpp"
-#include "../../graphics.cpp"
-#include "../../menus/decoration_menu.cpp"
-#include "../../common/game_error.cpp"
+#include "../../graphics.h"
+#include "../../menus/decoration_menu.h"
+#include "../../common/game_error.h"
 
-class DecorationMenuGraphicsComponent: public GraphicsComponent {
-  public:
-    DecorationMenuGraphicsComponent(): GraphicsComponent() {};
-    virtual void Render(GameObject&, Graphics&) override;
-    ~DecorationMenuGraphicsComponent() override {};
-
-  private:
-
-};
+DecorationMenuGraphicsComponent::DecorationMenuGraphicsComponent(): GraphicsComponent() {}
 
 void DecorationMenuGraphicsComponent::Render(GameObject& menu, Graphics& grph) {
   DecorationMenu *decorationMenu = dynamic_cast<DecorationMenu*>(&menu);
@@ -23,4 +13,4 @@ void DecorationMenuGraphicsComponent::Render(GameObject& menu, Graphics& grph) {
   grph.DrawRectangle(decorationMenu->Position);
 }
 
-#endif // DECORATION_MENU_GRAPHICS_COMPONENT
+DecorationMenuGraphicsComponent::~DecorationMenuGraphicsComponent() {}

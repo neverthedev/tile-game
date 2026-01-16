@@ -1,22 +1,4 @@
-#ifndef WORLD_TILES_TILE_RESOURCE
-#define WORLD_TILES_TILE_RESOURCE
-
-#include <string>
-
-enum class ResourceType { Coil, Clay, Iron, Copper };
-
-class WorldTileResource {
-  public:
-    std::string Name;
-    ResourceType Type;
-
-    WorldTileResource(ResourceType, std::string, int);
-    int Volume();
-    ~WorldTileResource();
-  private:
-    int volume;
-    int initialVolume;
-};
+#include "resource.h"
 
 WorldTileResource::WorldTileResource(ResourceType type, std::string name, int init_vol):
   Type { type },
@@ -30,5 +12,3 @@ int WorldTileResource::Volume() {
 }
 
 WorldTileResource::~WorldTileResource() {}
-
-#endif // WORLD_TILES_TILE_RESOURCE

@@ -1,22 +1,15 @@
-#ifndef WORLD_INPUT_COMPONENT_H
-#define WORLD_INPUT_COMPONENT_H
+#include "world_component.h"
 
-#include "component.h"
-#include "../common/game_error.cpp"
-#include "../common/game_object.cpp"
-#include "../game_world.cpp"
+#include "../common/game_error.h"
+#include "../common/game_object.h"
+#include "../game_world.h"
 
-class WorldInputComponent: public InputComponent {
-  public:
-    WorldInputComponent(): InputComponent() {};
-    virtual void HandleInput(GameObject&) override;
-    ~WorldInputComponent() override {};
-};
+WorldInputComponent::WorldInputComponent(): InputComponent() {}
 
 void WorldInputComponent::HandleInput(GameObject& wld) {
   GameWorld* world = dynamic_cast<GameWorld*>(&wld);
 
   if (!world) throw GameError("Incorrect object type provided!");
-};
+}
 
-#endif // WORLD_INPUT_COMPONENT_H
+WorldInputComponent::~WorldInputComponent() {}

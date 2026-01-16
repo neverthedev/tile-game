@@ -1,19 +1,17 @@
-#ifndef INPUT_COMPONENT_H
-#define INPUT_COMPONENT_H
+#pragma once
 
-#include "../common/game_object.cpp"
-#include "../common/position_2d.cpp"
+#include "../common/game_object.h"
+#include "../common/position_2d.h"
 
 class InputComponent {
-  public:
+public:
     InputComponent();
     virtual void HandleInput(GameObject&) = 0;
     virtual ~InputComponent();
-  protected:
+
+protected:
     bool IsKeyDown(KeyboardKey);
     Position2D GetMousePosition();
     float GetMouseWheelMove();
     float Clamp(float, float, float);
 };
-
-#endif // INPUT_COMPONENT_H
