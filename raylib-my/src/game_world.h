@@ -20,18 +20,18 @@ public:
 
   static GameWorld NewWorld(int, int, const TilesManager&);
 
-  GameWorld(int w, int h, const TilesManager&, std::unique_ptr<InputComponent>, std::unique_ptr<GraphicsComponent>);
+  GameWorld(int w, int h, const TilesManager&, std::unique_ptr<InputComponent>, std::unique_ptr<GraphicsComponent>, std::unique_ptr<UpdateComponent>);
   WorldTile& operator[](Position2D);
   WorldTile& GetTile(int index);
 
-  void HandleInput() override;
-  void Update() override;
-  void Render(Graphics&) override;
   const TilesManager& GetTilesManager();
+  GameCamera& GetCamera();
+  bool IsInitialized() const;
+  void SetInitialized();
   ~GameWorld();
 
 private:
-  GameCamera* camera;
+  std::unique_ptr<GameCamera> camera;
   bool initialized;
   std::vector<std::unique_ptr<WorldTile>> grid;
   const TilesManager& tilesManager;

@@ -260,7 +260,12 @@ tile.Render(grph);   // → TileGraphicsComponent::Render()
 ```
 GameWorld
 ├── unique_ptr<InputComponent> ────→ WorldInputComponent
+├── unique_ptr<UpdateComponent> ────→ WorldUpdateComponent
 ├── unique_ptr<GraphicsComponent> ──→ WorldGraphicsComponent
+├── unique_ptr<GameCamera> camera
+│   ├── unique_ptr<InputComponent> ────→ CameraInputComponent
+│   ├── unique_ptr<UpdateComponent> ────→ CameraUpdateComponent
+│   └── unique_ptr<GraphicsComponent> ──→ CameraGraphicsComponent
 └── vector<unique_ptr<WorldTile>>
     ├── unique_ptr<WorldTile>[0]
     │   ├── unique_ptr<InputComponent> ────→ TileInputComponent
@@ -278,9 +283,11 @@ All cleanup happens automatically when GameWorld is destroyed - no manual delete
 | Component Class | Used By | Purpose |
 |----------------|---------|---------|
 | `CameraInputComponent` | GameCamera | Handle camera movement and zoom |
+| `CameraUpdateComponent` | GameCamera | Camera physics (currently none) |
 | `CameraGraphicsComponent` | GameCamera | Render camera state |
-| `WorldInputComponent` | GameWorld | Handle world-level input |
-| `WorldGraphicsComponent` | GameWorld | Render world grid |
+| `WorldInputComponent` | GameWorld | Handle camera and tile input delegation |
+| `WorldUpdateComponent` | GameWorld | Update all tiles |
+| `WorldGraphicsComponent` | GameWorld | Render world grid and camera |
 | `TileInputComponent` | WorldTile | Handle tile interaction (currently empty) |
 | `TileUpdateComponent` | WorldTile | Update tile state (e.g., resource growth) |
 | `TileGraphicsComponent` | WorldTile | Render tile texture and frame |
@@ -290,6 +297,6 @@ All cleanup happens automatically when GameWorld is destroyed - no manual delete
 
 ## Related Documentation
 
-- [Task 02: Memory Management](tasks/task-02-memory-management.md) - RAII implementation details
+- [Task 02: Memory Management](tasks/task-02-memory-management.md) - ✅ DONE - RAII implementation details
 - [Game Interface Sorting](game_interface_sorting.md) - Index-based sorting for non-movable objects
 - [Code Organization](CODE_ORGANIZATION.md) - Overall code structure

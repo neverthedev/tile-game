@@ -4,18 +4,16 @@
 #include "../common/game_object.h"
 #include "../game_world.h"
 
-WorldInputComponent::WorldInputComponent(): InputComponent() {}
+WorldUpdateComponent::WorldUpdateComponent(): UpdateComponent() {}
 
-void WorldInputComponent::HandleInput(GameObject& wld) {
+void WorldUpdateComponent::Update(GameObject& wld) {
   GameWorld* world = dynamic_cast<GameWorld*>(&wld);
 
   if (!world) throw GameError("Incorrect object type provided!");
 
-  world->GetCamera().HandleInput();
-
   for (int i = 0; i < world->MapWidth * world->MapHeight; ++i) {
-    world->GetTile(i).HandleInput();
+    world->GetTile(i).Update();
   }
 }
 
-WorldInputComponent::~WorldInputComponent() {}
+WorldUpdateComponent::~WorldUpdateComponent() {}

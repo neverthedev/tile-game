@@ -22,6 +22,13 @@ void WorldGraphicsComponent::Render(GameObject& wld, Graphics& grph) {
   GameWorld* world = dynamic_cast<GameWorld*>(&wld);
   if (!world) throw GameError("Incorrect object type provided!");
 
+  if (!world->IsInitialized()) {
+    world->GetCamera().UpdateFromCamera2D(grph.camera);
+    world->SetInitialized();
+  }
+
+  world->GetCamera().Render(grph);
+
   Position2D gridF = grph.MouseToWorld2D();
   gridF += { 0.5f, 0.5f };
 

@@ -2,6 +2,7 @@
 
 #include "input_components/camera_component.h"
 #include "graphics_components/camera_component.h"
+#include "update_components/camera_component.h"
 #include "input_components/component.h"
 #include "graphics_components/component.h"
 #include "update_components/component.h"
@@ -10,18 +11,20 @@ GameWorld::GameWorld(
   int w, int h,
   const TilesManager& tileMnr,
   std::unique_ptr<InputComponent> inp,
-  std::unique_ptr<GraphicsComponent> rnd
+  std::unique_ptr<GraphicsComponent> rnd,
+  std::unique_ptr<UpdateComponent> upd
 ):
-  GameObject(std::move(inp), std::move(rnd)),
+  GameObject(std::move(inp), std::move(rnd), std::move(upd)),
   MapWidth { w },
   MapHeight { h },
   initialized { false },
   tilesManager { tileMnr },
   grid { }
 {
-  camera = new GameCamera(
+  camera = std::make_unique<GameCamera>(
     std::make_unique<CameraInputComponent>(),
-    std::make_unique<CameraGraphicsComponent>()
+    std::make_unique<CameraGraphicsComponent>(),
+    std::make_unique<CameraUpdateComponent>()
   );
 
   initializeGrid();
@@ -57,27 +60,15 @@ WorldTile& GameWorld::GetTile(int index) {
   return *grid[index];
 }
 
-void GameWorld::HandleInput() {
-  GameObject::HandleInput();
-  camera->HandleInput();
-  for (auto& tile: grid) tile->HandleInput();
+GameCamera& GameWorld::GetCamera() {
+  return *camera;
 }
 
-void GameWorld::Update() {
-  for (auto& tile: grid) tile->Update();
-};
+bool GameWorld::IsInitialized() const {
+  return initialized;
+}
 
-void GameWorld::Render(Graphics& graphics) {
-  if (!initialized) afterScreenInitialization(graphics);
-
-  camera->Render(graphics);
-  GameObject::Render(graphics);
-};
-
-void GameWorld::afterScreenInitialization(Graphics& grph) {
-  if (initialized) return;
-
-  camera->UpdateFromCamera2D(grph.camera);
+void GameWorld::SetInitialized() {
   initialized = true;
 }
 
@@ -89,11 +80,13 @@ GameWorld::~GameWorld() = default;
 
 #include "graphics_components/world_component.h"
 #include "input_components/world_component.h"
+#include "update_components/world_component.h"
 
 GameWorld GameWorld::NewWorld(int w, int h, const TilesManager& tileMngr) {
   return {
     w, h, tileMngr,
     std::make_unique<WorldInputComponent>(),
-    std::make_unique<WorldGraphicsComponent>()
+    std::make_unique<WorldGraphicsComponent>(),
+    std::make_unique<WorldUpdateComponent>()
   };
 }

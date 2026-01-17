@@ -15,7 +15,7 @@ This document lists all identified improvements for the project architecture.
 | ID | Task | Status | Priority |
 |----|------|--------|----------|
 | [TASK-01](task-01-cpp-includes.md) | Replace .cpp includes with proper headers | ✅ DONE | 🔴 Critical |
-| [TASK-02](task-02-memory-management.md) | Fix manual memory management | 📋 TODO | 🔴 Critical |
+| [TASK-02](task-02-memory-management.md) | Fix manual memory management | ✅ DONE | 🔴 Critical |
 
 ## High Priority 🟡
 

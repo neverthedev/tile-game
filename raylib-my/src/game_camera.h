@@ -17,8 +17,7 @@ public:
   float rotation;         // Camera rotation in degrees
   float zoom;             // Camera zoom (scaling), should be 1.0f by default
 
-  GameCamera(std::unique_ptr<InputComponent> inp, std::unique_ptr<GraphicsComponent> grph);
-  void Update() override;
+  GameCamera(std::unique_ptr<InputComponent> inp, std::unique_ptr<GraphicsComponent> grph, std::unique_ptr<UpdateComponent> upd);
   void UpdateFromCamera2D(Camera2D);
   ~GameCamera();
 
