@@ -11,6 +11,8 @@ public:
     GameArea(GameObject&, Rectangle2D, int);
     GameArea(const GameArea&) = delete;
     GameArea& operator=(const GameArea&) = delete;
+    GameArea(GameArea&&) noexcept;
+    GameArea& operator=(GameArea&&) = delete;
     virtual void HandleInput() override;
     virtual void Update() override;
     virtual void Render(Graphics&) override;

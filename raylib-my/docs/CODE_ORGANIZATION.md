@@ -198,7 +198,7 @@ file(GLOB_RECURSE HEADER_FILES CONFIGURE_DEPENDS *.h *.hpp)
 set(SOURCE_FILES ${CPP_FILES} ${C_FILES})
 
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCE_FILES} ${HEADER_FILES})
-```
+```cpp
 
 Every `.cpp` file is a standalone compilation unit - no files are excluded or `#include`d by
 list(FILTER CPP_FILES EXCLUDE REGEX "game_interface_\\.cpp$")

@@ -24,7 +24,8 @@ public:
 private:
   int screenWidth;
   int screenHeight;
-  std::vector<GameArea*> gameAreas;
+  std::vector<GameArea> gameAreas;
+  std::vector<size_t> sortedIndices;
   TilesManager tilesManager;
   GameWorld gameWorld;
   Menu* currentMenu;

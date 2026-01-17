@@ -8,8 +8,9 @@
 
 ## Problem Description
 
-The code uses manual memory management with raw pointers and explicit `new`/`delete`:
+The code uses manual memory management with raw pointers and explicit `new`/`delete` **throughout the codebase**:
 
+### Example 1: GameInterface - GameArea management
 ```cpp
 void GameInterface::AddArea(GameObject& obj, Rectangle2D pos, int priority) {
   // Need to find out how works move - copy constructors in relation to vectors
@@ -25,6 +26,39 @@ GameInterface::~GameInterface() {
   for(GameArea* area : gameAreas) {
     delete area;
   }
+}
+```
+
+### Example 2: MenuFactory - Component creation
+```cpp
+DecorationMenu& MenuFactory::CreateDecorationMenu(Rectangle2D pos, TilesManager& mngr) {
+  DecorationMenuInputComponent* inp_cmp = new DecorationMenuInputComponent();
+  DecorationMenuUpdateComponent* upd_cmp = new DecorationMenuUpdateComponent();
+  DecorationMenuGraphicsComponent* grph_cmp = new DecorationMenuGraphicsComponent();
+  DecorationMenu* decorationMenu = new DecorationMenu(pos, mngr, *inp_cmp, *upd_cmp, *grph_cmp);
+  return *decorationMenu;
+}
+```
+
+### Example 3: GameWorld - Camera and components
+```cpp
+GameWorld::GameWorld(...) {
+  CameraInputComponent * cameraInp = new CameraInputComponent;
+  CameraGraphicsComponent * cameraGrph = new CameraGraphicsComponent;
+  camera = new GameCamera(*cameraInp, *cameraGrph);
+  // ...
+}
+
+GameWorld::~GameWorld() {
+  delete &input;
+  delete &render;
+}
+```
+
+### Example 4: Factory methods returning raw pointers
+```cpp
+WorldTile* WorldTileTerrainType::NewTile(Position2D pos) const {
+  return new WorldTile(*this, pos);
 }
 ```
 
@@ -44,6 +78,45 @@ GameInterface::~GameInterface() {
 - Difficult to maintain
 - Error-prone pattern
 - Your own comment acknowledges the problem
+
+---
+
+## Checklist - Fix RAII Violations
+
+### GameInterface - GameArea Management
+- [x] Update `gameAreas` vector to use smart pointers or value semantics
+- [x] Modify `AddArea()` method to use `std::make_unique` or `emplace_back`
+- [x] Remove manual `delete` loop from destructor
+- [x] Update all usage sites that access `gameAreas`
+- [x] Implement index-based sorting to avoid moving objects with reference members
+- [x] Document solution in [game_interface_sorting.md](../game_interface_sorting.md)
+
+### MenuFactory - Component Creation
+- [ ] Convert component pointers to smart pointers or value semantics
+- [ ] Update `CreateDecorationMenu()` to use RAII
+- [ ] Ensure Menu class properly owns its components
+- [ ] Update Menu destructor if needed
+
+### GameWorld - Camera Components
+- [ ] Convert camera component pointers to smart pointers or value semantics
+- [ ] Update camera creation in constructor
+- [ ] Remove manual `delete &input` and `delete &render` from destructor
+- [ ] Update `NewWorld()` factory method
+
+### GameCamera - Component References
+- [ ] Store components as values or smart pointers (not references)
+- [ ] Remove manual `delete &input` and `delete &graphic` from destructor
+- [ ] Update constructor to accept proper ownership
+
+### Menu - Component References
+- [ ] Store components as values or smart pointers (not references)
+- [ ] Remove manual `delete &input` and `delete &graphics` from destructor
+- [ ] Update constructor to accept proper ownership
+
+### WorldTile Factory
+- [ ] Change `NewTile()` return type from `WorldTile*` to `std::unique_ptr<WorldTile>`
+- [ ] Update all callers to handle smart pointer return
+- [ ] Consider if value semantics would be better
 
 ---
 
@@ -186,12 +259,36 @@ auto& gameArea = *gameAreas[i];
 
 ## Files Affected
 
-- `src/game_interface_.cpp` (primary change)
-- Any other files using raw `new`/`delete` for dynamic objects
-- Check for similar patterns in:
-  - Menu system
-  - Component creation
-  - Any factory methods
+### Primary Files with RAII Violations:
+
+1. **`src/game_interface.cpp`** - GameArea vector management
+   - Line 22: `new GameArea`
+   - Line 65: `delete area` in destructor
+
+2. **`src/menus/factory.cpp`** - Menu and component creation
+   - Lines 8-12: Multiple `new` calls for components and menu
+
+3. **`src/game_world.cpp`** - Camera and world components
+   - Lines 15-17: Camera components creation
+   - Lines 87-88: World components in factory method
+   - Lines 79-80: Manual deletion of references
+
+4. **`src/game_camera.cpp`** - Component cleanup
+   - Lines 36-37: Manual deletion of component references
+
+5. **`src/menus/menu.cpp`** - Component cleanup
+   - Lines 25-26: Manual deletion of component references
+
+6. **`src/world_tiles/tile.cpp`** - Factory method
+   - Line 48: Returns raw pointer from `NewTile()`
+
+### Related Headers (may need updates):
+- `src/game_interface.h`
+- `src/menus/factory.h`
+- `src/game_world.h`
+- `src/game_camera.h`
+- `src/menus/menu.h`
+- `src/world_tiles/tile.h`
 
 ---
 

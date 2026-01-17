@@ -15,15 +15,14 @@ GameInterface::GameInterface(int w, int h):
 };
 
 void GameInterface::AddArea(GameObject& obj, Rectangle2D pos, int priority) {
-  // Need to find out how works move - copy constructors in relation to vectors
-  // And use it here to avoid calling new explicitly
-  // Also need to find out how it would work in case of deletion from vektor.
-  // How will it clean memory in this case.
-  GameArea* area = new GameArea(obj, pos, priority);
-  gameAreas.push_back(area);
-  std::sort(gameAreas.begin(), gameAreas.end(), [](const GameArea* a1, const GameArea* a2) {
-    return a1->priority < a2->priority;
-  });
+  gameAreas.emplace_back(obj, pos, priority);
+  sortedIndices.push_back(gameAreas.size() - 1);
+
+  // Sort indices by priority, not the objects themselves
+  std::sort(sortedIndices.begin(), sortedIndices.end(),
+    [this](size_t i1, size_t i2) {
+      return gameAreas[i1].priority < gameAreas[i2].priority;
+    });
 }
 
 // Must be called after window initialization but
@@ -35,33 +34,30 @@ void GameInterface::LoadTextures(Graphics& grph) {
 void GameInterface::HandleInput() {
   Vector2 mouse = GetMousePosition();
 
-  for(int i = gameAreas.size() - 1; i >= 0; --i) {
-    GameArea* gameArea = gameAreas[i];
+  // Iterate in reverse priority order (highest priority first)
+  for(int i = sortedIndices.size() - 1; i >= 0; --i) {
+    GameArea& gameArea = gameAreas[sortedIndices[i]];
 
-    Rectangle rect = { gameArea->position.x, gameArea->position.y,
-                       gameArea->position.width, gameArea->position.height };
+    Rectangle rect = { gameArea.position.x, gameArea.position.y,
+                       gameArea.position.width, gameArea.position.height };
 
     if (CheckCollisionPointRec(mouse, rect)) {
-      gameArea->HandleInput();
+      gameArea.HandleInput();
       break;
     }
   }
 }
 
 void GameInterface::Update() {
-  for(GameArea* gameArea: gameAreas) {
-    gameArea->Update();
+  for(size_t idx : sortedIndices) {
+    gameAreas[idx].Update();
   }
 }
 
 void GameInterface::Render(Graphics& grph) {
-  for(GameArea* gameArea: gameAreas) {
-    gameArea->Render(grph);
+  for(size_t idx : sortedIndices) {
+    gameAreas[idx].Render(grph);
   }
 }
 
-GameInterface::~GameInterface() {
-  for(GameArea* area : gameAreas) {
-    delete area;
-  }
-}
+GameInterface::~GameInterface() = default;

@@ -9,6 +9,13 @@ GameArea::GameArea(GameObject& obj, Rectangle2D pos, int prt):
     priority { prt }
 {}
 
+GameArea::GameArea(GameArea&& other) noexcept:
+    GameObject(),
+    position { other.position },
+    object { other.object },
+    priority { other.priority }
+{}
+
 void GameArea::HandleInput() {
     object.HandleInput();
 }
