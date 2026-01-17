@@ -4,8 +4,6 @@
 
 #include "graphics.h"
 #include "common/game_object.h"
-#include "input_components/component.h"
-#include "graphics_components/component.h"
 
 class GameCamera: public GameObject {
 public:
@@ -19,16 +17,12 @@ public:
   float rotation;         // Camera rotation in degrees
   float zoom;             // Camera zoom (scaling), should be 1.0f by default
 
-  GameCamera(InputComponent &c, GraphicsComponent&);
-  void HandleInput() override;
+  GameCamera(std::unique_ptr<InputComponent> inp, std::unique_ptr<GraphicsComponent> grph);
   void Update() override;
-  void Render(Graphics&) override;
   void UpdateFromCamera2D(Camera2D);
   ~GameCamera();
 
   operator const Camera2D() const;
 
 private:
-  InputComponent& input;
-  GraphicsComponent& graphic;
 };

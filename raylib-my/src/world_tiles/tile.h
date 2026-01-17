@@ -7,7 +7,7 @@
 #include "decorations/decoration.h"
 #include "resources/resource.h"
 
-class WorldTile: GameObject {
+class WorldTile: public GameObject {
   friend class WorldTileTerrainType;
 
 public:
@@ -17,15 +17,17 @@ public:
   WorldTileResource* Resource;
   int MowementSpeed;
 
-  virtual void HandleInput() override;
-  virtual void Update() override;
-  virtual void Render(Graphics&) override;
   virtual ~WorldTile();
   const Texture2D& Texture() const;
   const Image& TextureImage() const;
 
 private:
-  WorldTile(const WorldTileTerrainType&, Position2D);
+  WorldTile(
+    const WorldTileTerrainType&,
+    Position2D,
+    std::unique_ptr<InputComponent>,
+    std::unique_ptr<UpdateComponent>,
+    std::unique_ptr<GraphicsComponent>
+  );
   const WorldTileTerrainType& TerrainType;
-  void drawIsoTileFrame(Graphics&);
 };

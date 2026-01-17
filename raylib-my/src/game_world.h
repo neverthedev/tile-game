@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <map>
+#include <memory>
 
 #include "graphics.h"
 #include "common/game_error.h"
@@ -19,10 +20,9 @@ public:
 
   static GameWorld NewWorld(int, int, const TilesManager&);
 
-  GameWorld(int w, int h, const TilesManager&, InputComponent&, GraphicsComponent&);
+  GameWorld(int w, int h, const TilesManager&, std::unique_ptr<InputComponent>, std::unique_ptr<GraphicsComponent>);
   WorldTile& operator[](Position2D);
-  WorldTile* begin();
-  WorldTile* end();
+  WorldTile& GetTile(int index);
 
   void HandleInput() override;
   void Update() override;
@@ -31,11 +31,9 @@ public:
   ~GameWorld();
 
 private:
-  InputComponent& input;
-  GraphicsComponent& render;
   GameCamera* camera;
   bool initialized;
-  std::vector<WorldTile> grid;
+  std::vector<std::unique_ptr<WorldTile>> grid;
   const TilesManager& tilesManager;
 
   void initializeGrid();

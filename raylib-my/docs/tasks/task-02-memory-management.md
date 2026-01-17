@@ -92,31 +92,47 @@ WorldTile* WorldTileTerrainType::NewTile(Position2D pos) const {
 - [x] Document solution in [game_interface_sorting.md](../game_interface_sorting.md)
 
 ### MenuFactory - Component Creation
-- [ ] Convert component pointers to smart pointers or value semantics
-- [ ] Update `CreateDecorationMenu()` to use RAII
-- [ ] Ensure Menu class properly owns its components
-- [ ] Update Menu destructor if needed
+- [x] Convert component pointers to smart pointers or value semantics
+- [x] Update `CreateDecorationMenu()` to use RAII
+- [x] Ensure Menu class properly owns its components
+- [x] Update Menu destructor (now `= default`)
 
 ### GameWorld - Camera Components
-- [ ] Convert camera component pointers to smart pointers or value semantics
-- [ ] Update camera creation in constructor
-- [ ] Remove manual `delete &input` and `delete &render` from destructor
-- [ ] Update `NewWorld()` factory method
+- [x] Convert camera component pointers to smart pointers or value semantics
+- [x] Update camera creation in constructor
+- [x] Remove manual `delete &input` and `delete &render` from destructor
+- [x] Update `NewWorld()` factory method
 
 ### GameCamera - Component References
-- [ ] Store components as values or smart pointers (not references)
-- [ ] Remove manual `delete &input` and `delete &graphic` from destructor
-- [ ] Update constructor to accept proper ownership
+- [x] Store components as values or smart pointers (not references)
+- [x] Remove manual `delete &input` and `delete &graphic` from destructor
+- [x] Update constructor to accept proper ownership
 
 ### Menu - Component References
-- [ ] Store components as values or smart pointers (not references)
-- [ ] Remove manual `delete &input` and `delete &graphics` from destructor
-- [ ] Update constructor to accept proper ownership
+- [x] Store components as values or smart pointers (not references)
+- [x] Remove manual `delete &input` and `delete &graphics` from destructor
+- [x] Update constructor to accept proper ownership
 
 ### WorldTile Factory
-- [ ] Change `NewTile()` return type from `WorldTile*` to `std::unique_ptr<WorldTile>`
-- [ ] Update all callers to handle smart pointer return
-- [ ] Consider if value semantics would be better
+- [x] Convert WorldTile to use component architecture
+- [x] Create TileInputComponent, TileUpdateComponent, TileGraphicsComponent
+- [x] Update storage from `vector<WorldTile>` to `vector<unique_ptr<WorldTile>>`
+- [x] Update all callers to handle unique_ptr storage
+
+### GameObject Base Class Refactoring
+- [x] Centralize component management in GameObject
+- [x] Add protected constructor accepting components via unique_ptr
+- [x] Implement default HandleInput/Update/Render delegating to components
+- [x] Make component constructor protected to prevent direct GameObject instantiation
+- [x] Document component architecture in [component_architecture.md](../component_architecture.md)
+
+### Remove Component Logic from GameObject Descendants
+- [ ] Move GameWorld's HandleInput logic to WorldInputComponent
+- [ ] Move GameWorld's Update logic to WorldUpdateComponent
+- [ ] Move GameWorld's Render logic to WorldGraphicsComponent
+- [ ] Remove GameCamera's empty Update() override (let base class delegate to components)
+- [ ] Ensure all GameObject descendants only delegate to components, no custom implementation
+- [ ] Verify no other GameObject descendants implement HandleInput/Update/Render directly
 
 ---
 

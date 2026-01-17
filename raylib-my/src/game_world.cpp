@@ -2,19 +2,27 @@
 
 #include "input_components/camera_component.h"
 #include "graphics_components/camera_component.h"
+#include "input_components/component.h"
+#include "graphics_components/component.h"
+#include "update_components/component.h"
 
-GameWorld::GameWorld(int w, int h, const TilesManager& tileMnr, InputComponent& c_inp, GraphicsComponent& c_rnd):
+GameWorld::GameWorld(
+  int w, int h,
+  const TilesManager& tileMnr,
+  std::unique_ptr<InputComponent> inp,
+  std::unique_ptr<GraphicsComponent> rnd
+):
+  GameObject(std::move(inp), std::move(rnd)),
   MapWidth { w },
   MapHeight { h },
-  input { c_inp },
-  render { c_rnd },
   initialized { false },
   tilesManager { tileMnr },
   grid { }
 {
-  CameraInputComponent * cameraInp = new CameraInputComponent;
-  CameraGraphicsComponent * cameraGrph = new CameraGraphicsComponent;
-  camera = new GameCamera(*cameraInp, *cameraGrph);
+  camera = new GameCamera(
+    std::make_unique<CameraInputComponent>(),
+    std::make_unique<CameraGraphicsComponent>()
+  );
 
   initializeGrid();
 };
@@ -25,14 +33,14 @@ void GameWorld::initializeGrid() {
   for (int h = 0; h < MapHeight; ++h) {
     for (int w  = 0; w < MapWidth; ++w) {
       if ((w < oW || w > MapWidth - oW - 1) || (h < oW || h > MapHeight - oW - 1)) {
-        WorldTile& tile = *tilesManager.NewTile("Deep Water", { (float) w + 0.5f, (float) h + 0.5f });
-        grid.push_back(tile);
+        std::unique_ptr<WorldTile> tile(tilesManager.NewTile("Deep Water", { (float) w + 0.5f, (float) h + 0.5f }));
+        grid.push_back(std::move(tile));
       } else if ((w < gW || w > MapWidth - gW - 1) || (h < gW || h > MapHeight - gW - 1)) {
-        WorldTile& tile = *tilesManager.NewTile("Plains", { (float) w + 0.5f, (float) h + 0.5f });
-        grid.push_back(tile);
+        std::unique_ptr<WorldTile> tile(tilesManager.NewTile("Plains", { (float) w + 0.5f, (float) h + 0.5f }));
+        grid.push_back(std::move(tile));
       } else {
-        WorldTile& tile = *tilesManager.NewTile("Grassland", { (float) w + 0.5f, (float) h + 0.5f });
-        grid.push_back(tile);
+        std::unique_ptr<WorldTile> tile(tilesManager.NewTile("Grassland", { (float) w + 0.5f, (float) h + 0.5f }));
+        grid.push_back(std::move(tile));
       }
     }
   }
@@ -42,26 +50,28 @@ WorldTile& GameWorld::operator[](Position2D pos) {
   if (pos.x >= MapWidth || pos.y >= MapHeight) {
     throw GameError("Grid possition overflow");
   }
-  return grid[floor(pos.y) * MapWidth + floor(pos.x)];
+  return *grid[floor(pos.y) * MapWidth + floor(pos.x)];
 }
-WorldTile* GameWorld::begin() { return grid.data(); }
-WorldTile* GameWorld::end() { return grid.data() + grid.size(); }
+
+WorldTile& GameWorld::GetTile(int index) {
+  return *grid[index];
+}
 
 void GameWorld::HandleInput() {
-  input.HandleInput(*this);
+  GameObject::HandleInput();
   camera->HandleInput();
-  for (WorldTile& tile: *this) tile.HandleInput();
+  for (auto& tile: grid) tile->HandleInput();
 }
 
 void GameWorld::Update() {
-  for (WorldTile& tile: *this) tile.Update();
+  for (auto& tile: grid) tile->Update();
 };
 
 void GameWorld::Render(Graphics& graphics) {
   if (!initialized) afterScreenInitialization(graphics);
 
   camera->Render(graphics);
-  render.Render(*this, graphics);
+  GameObject::Render(graphics);
 };
 
 void GameWorld::afterScreenInitialization(Graphics& grph) {
@@ -75,17 +85,15 @@ const TilesManager& GameWorld::GetTilesManager() {
   return tilesManager;
 }
 
-GameWorld::~GameWorld() {
-  delete &input;
-  delete &render;
-}
+GameWorld::~GameWorld() = default;
 
 #include "graphics_components/world_component.h"
 #include "input_components/world_component.h"
 
 GameWorld GameWorld::NewWorld(int w, int h, const TilesManager& tileMngr) {
-  WorldInputComponent* ic = new WorldInputComponent{};
-  WorldGraphicsComponent* gc = new WorldGraphicsComponent{};
-
-  return { w, h, tileMngr, *ic, *gc };
+  return {
+    w, h, tileMngr,
+    std::make_unique<WorldInputComponent>(),
+    std::make_unique<WorldGraphicsComponent>()
+  };
 }

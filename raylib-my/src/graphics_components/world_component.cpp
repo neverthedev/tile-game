@@ -40,7 +40,8 @@ void WorldGraphicsComponent::Render(GameObject& wld, Graphics& grph) {
     grph.Dst = &worldTileMap;
     grph.Correction = Position2D(world->MapHeight * grph.TileWidth / 2.0f, 0.0f);
 
-    for(WorldTile& tile: *world) {
+    for(int i = 0; i < world->MapHeight * world->MapWidth; ++i) {
+      WorldTile& tile = world->GetTile(i);
       if (tile.Dirty) {
         tile.Render(grph);
         redraw |= true;

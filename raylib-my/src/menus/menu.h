@@ -10,22 +10,15 @@
 class MenuFactory;
 
 class Menu: public GameObject {
-    friend class MenuFactory;
+  friend class MenuFactory;
 
 public:
-    Rectangle2D Position;
+  Rectangle2D Position;
 
-    virtual void HandleInput() override;
-    virtual void Update() override;
-    virtual void Render(Graphics& grph) override;
-
-    ~Menu();
+  ~Menu();
 
 protected:
-    Menu(Rectangle2D, InputComponent&, UpdateComponent&, GraphicsComponent&);
+  Menu(Rectangle2D, std::unique_ptr<InputComponent>, std::unique_ptr<UpdateComponent>, std::unique_ptr<GraphicsComponent>);
 
 private:
-    InputComponent& input;
-    UpdateComponent& update;
-    GraphicsComponent& graphics;
 };
