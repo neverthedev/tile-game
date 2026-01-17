@@ -58,3 +58,4 @@ _deps/
 *.pdb
 
 *.code-workspace
+doc_ext/
