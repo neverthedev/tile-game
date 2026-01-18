@@ -1,4 +1,6 @@
 #include "game_world.h"
+#include "services/service_locator.h"
+#include "services/tiles_manager.h"
 
 #include "input_components/camera_component.h"
 #include "graphics_components/camera_component.h"
@@ -9,7 +11,6 @@
 
 GameWorld::GameWorld(
   int w, int h,
-  const TilesManager& tileMnr,
   std::unique_ptr<InputComponent> inp,
   std::unique_ptr<GraphicsComponent> rnd,
   std::unique_ptr<UpdateComponent> upd
@@ -18,7 +19,6 @@ GameWorld::GameWorld(
   MapWidth { w },
   MapHeight { h },
   initialized { false },
-  tilesManager { tileMnr },
   grid { }
 {
   camera = std::make_unique<GameCamera>(
@@ -31,6 +31,7 @@ GameWorld::GameWorld(
 };
 
 void GameWorld::initializeGrid() {
+  auto& tilesManager = ServiceLocator::GetTilesManager();
   int oW = 3;
   int gW = 10;
   for (int h = 0; h < MapHeight; ++h) {
@@ -72,19 +73,15 @@ void GameWorld::SetInitialized() {
   initialized = true;
 }
 
-const TilesManager& GameWorld::GetTilesManager() {
-  return tilesManager;
-}
-
 GameWorld::~GameWorld() = default;
 
 #include "graphics_components/world_component.h"
 #include "input_components/world_component.h"
 #include "update_components/world_component.h"
 
-GameWorld GameWorld::NewWorld(int w, int h, const TilesManager& tileMngr) {
+GameWorld GameWorld::NewWorld(int w, int h) {
   return {
-    w, h, tileMngr,
+    w, h,
     std::make_unique<WorldInputComponent>(),
     std::make_unique<WorldGraphicsComponent>(),
     std::make_unique<WorldUpdateComponent>()

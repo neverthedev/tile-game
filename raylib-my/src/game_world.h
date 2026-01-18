@@ -7,7 +7,6 @@
 #include "graphics.h"
 #include "common/game_error.h"
 #include "common/game_object.h"
-#include "managers/tiles_manager.h"
 #include "game_camera.h"
 #include "input_components/component.h"
 #include "graphics_components/component.h"
@@ -18,13 +17,11 @@ public:
   int MapWidth;
   int MapHeight;
 
-  static GameWorld NewWorld(int, int, const TilesManager&);
+  static GameWorld NewWorld(int, int);
 
-  GameWorld(int w, int h, const TilesManager&, std::unique_ptr<InputComponent>, std::unique_ptr<GraphicsComponent>, std::unique_ptr<UpdateComponent>);
+  GameWorld(int w, int h, std::unique_ptr<InputComponent>, std::unique_ptr<GraphicsComponent>, std::unique_ptr<UpdateComponent>);
   WorldTile& operator[](Position2D);
   WorldTile& GetTile(int index);
-
-  const TilesManager& GetTilesManager();
   GameCamera& GetCamera();
   bool IsInitialized() const;
   void SetInitialized();
@@ -34,7 +31,6 @@ private:
   std::unique_ptr<GameCamera> camera;
   bool initialized;
   std::vector<std::unique_ptr<WorldTile>> grid;
-  const TilesManager& tilesManager;
 
   void initializeGrid();
   void initializeTyleTypes();

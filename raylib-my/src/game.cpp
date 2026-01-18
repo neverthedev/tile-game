@@ -5,6 +5,7 @@
 #include "menus/factory.h"
 #include "graphics.h"
 #include "game_interface.h"
+#include "services/service_locator.h"
 
 const float TILE_W = 64.0f;
 const float TILE_H = 32.0f;
@@ -15,12 +16,13 @@ const int SCREEN_H = 768;
 const int FRAME_RATE = 60;
 
 int main(void) {
+  ServiceLocator::Initialize();
   Graphics graphics { SCREEN_W, SCREEN_H, TILE_W, TILE_H, "IsoGame Test", FRAME_RATE };
   GameInterface interface { SCREEN_W, SCREEN_H };
 
   graphics.InitScreen();
 
-  interface.LoadTextures(graphics);
+  ServiceLocator::LoadResources(graphics);
 
   while (!graphics.Done()) {
     interface.HandleInput();
@@ -29,6 +31,8 @@ int main(void) {
       interface.Render(graphics);
     graphics.EndDrawing();
   }
+
+  ServiceLocator::Shutdown();
 
   return 0;
 }

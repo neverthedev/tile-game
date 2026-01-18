@@ -95,6 +95,37 @@ Use `#pragma once` for all header files:
 
 **Why:** Simpler than traditional include guards, supported by all modern compilers.
 
+### Comments
+
+**Use comments sparingly and only when necessary.**
+
+Code should be self-documenting through clear naming and structure. Use comments only for:
+
+1. **Complex algorithms** - Explain non-obvious logic
+2. **Why, not what** - Explain reasoning, not what the code does
+3. **Workarounds** - Document why unusual approaches are needed
+
+```cpp
+// DON'T - Obvious comment
+int count = 0;  // Initialize counter to zero
+
+// DO - Explains reasoning
+int count = 0;  // Start at 0 because first element is skipped in legacy data
+
+// DON'T - Redundant
+void LoadTextures() {  // Load all textures
+
+// DO - Self-documenting code needs no comment
+void LoadTextures() {
+
+// DO - Complex behavior explained
+void ProcessInput() {
+  // Reverse priority order needed because UI elements overlay game world
+  for(int i = sortedIndices.size() - 1; i >= 0; --i) {
+```
+
+**Rationale:** Comments become outdated and misleading. Good names and structure are always up-to-date.
+
 ### Indentation
 **CRITICAL: Use 2-space indentation for all code.**
 

@@ -5,7 +5,6 @@
 #include "raylib.h"
 
 #include "common/game_area.h"
-#include "managers/tiles_manager.h"
 #include "game_world.h"
 #include "menus/menu.h"
 #include "menus/factory.h"
@@ -17,7 +16,6 @@ public:
   virtual void HandleInput() override;
   virtual void Update() override;
   virtual void Render(Graphics& grph) override;
-  void LoadTextures(Graphics& grph);
 
   ~GameInterface();
 
@@ -26,7 +24,6 @@ private:
   int screenHeight;
   std::vector<GameArea> gameAreas;
   std::vector<size_t> sortedIndices;
-  TilesManager tilesManager;
   GameWorld gameWorld;
-  Menu* currentMenu;
+  std::unique_ptr<Menu> currentMenu;
 };

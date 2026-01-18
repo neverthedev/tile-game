@@ -1,14 +1,14 @@
 #include "game_interface.h"
+#include "services/service_locator.h"
 
 GameInterface::GameInterface(int w, int h):
   screenWidth { w },
   screenHeight { h },
-  tilesManager { TilesManager() },
-  gameWorld { GameWorld::NewWorld(60, 80, tilesManager) }
+  gameWorld { GameWorld::NewWorld(60, 80) }
 {
-  currentMenu = &MenuFactory::CreateDecorationMenu({
+  currentMenu = MenuFactory::CreateDecorationMenu({
     float(screenWidth) - 160, 0, 160.0, float(screenHeight)
-  }, tilesManager);
+  });
 
   AddArea(gameWorld, { 0, 0, float(screenWidth), float(screenHeight) }, 0);
   AddArea(*currentMenu, currentMenu->Position, 1);
@@ -25,11 +25,6 @@ void GameInterface::AddArea(GameObject& obj, Rectangle2D pos, int priority) {
     });
 }
 
-// Must be called after window initialization but
-// Before first render
-void GameInterface::LoadTextures(Graphics& grph) {
-  tilesManager.LoadTextures(grph);
-}
 
 void GameInterface::HandleInput() {
   Vector2 mouse = GetMousePosition();

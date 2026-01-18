@@ -1,10 +1,10 @@
 #pragma once
 
+#include <memory>
 #include "menu.h"
 #include "decoration_menu.h"
-#include "../managers/tiles_manager.h"
 
 class MenuFactory {
 public:
-  static DecorationMenu& CreateDecorationMenu(Rectangle2D, TilesManager&);
+  static std::unique_ptr<DecorationMenu> CreateDecorationMenu(Rectangle2D);
 };
