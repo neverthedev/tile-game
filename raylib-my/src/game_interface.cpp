@@ -1,6 +1,8 @@
 #include "game_interface.h"
 #include "services/service_locator.h"
+#include "raylib.h"
 
+// TODO: Doesnt' follow component pattern, consider to refactor
 GameInterface::GameInterface(int w, int h):
   screenWidth { w },
   screenHeight { h },
@@ -24,7 +26,6 @@ void GameInterface::AddArea(GameObject& obj, Rectangle2D pos, int priority) {
       return gameAreas[i1].priority < gameAreas[i2].priority;
     });
 }
-
 
 void GameInterface::HandleInput() {
   Vector2 mouse = GetMousePosition();

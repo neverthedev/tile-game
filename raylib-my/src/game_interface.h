@@ -2,8 +2,6 @@
 
 #include <vector>
 
-#include "raylib.h"
-
 #include "common/game_area.h"
 #include "game_world.h"
 #include "menus/menu.h"
