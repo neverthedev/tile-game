@@ -2,12 +2,13 @@
 
 #include <string>
 
+#include "raylib.h"  // Must be before graphics.h to avoid forward declaration conflicts
 #include "../common/game_error.h"
-#include "../graphics.h"
 #include "../common/position_2d.h"
 
 // Forward declaration
 class WorldTile;
+class Graphics;
 
 class WorldTileTerrainType {
   friend class WorldTile;

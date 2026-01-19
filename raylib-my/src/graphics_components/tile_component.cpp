@@ -1,6 +1,7 @@
 #include "tile_component.h"
 #include "../world_tiles/tile.h"
 #include "../graphics.h"
+#include "../common/color_2d.h"
 
 TileGraphicsComponent::TileGraphicsComponent() {}
 
@@ -18,7 +19,7 @@ void TileGraphicsComponent::Render(GameObject& obj, Graphics& grph) {
 
   //DrawTexturePro(texture, src , dst, {0, 0}, 0, WHITE);
   ImageDraw(grph.Dst, tile.TextureImage(), src, dst, WHITE);
-  grph.DrawDiamondFrame(center, BLACK, true, 1.0f);
+  grph.DrawDiamondFrame(center, Color2D::Black(), true, 1.0f);
 }
 
 TileGraphicsComponent::~TileGraphicsComponent() {}

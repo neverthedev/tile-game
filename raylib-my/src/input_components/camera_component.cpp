@@ -1,6 +1,8 @@
 #include "camera_component.h"
 
 #include "../game_camera.h"
+#include "raylib.h"
+#include "raymath.h"
 
 CameraInputComponent::CameraInputComponent(): InputComponent() {}
 
@@ -18,15 +20,27 @@ void CameraInputComponent::HandleInput(GameObject &cam) {
   if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W))
     camera->target.y -= camera->MOVE_SPEED;
 
-  Vector2 mouse = GetMousePosition();
+  // TODO: Separate it out to the InputAdapter for raylib
+  Position2D mousePos = GetMousePosition();
+  Vector2 mouse = Vector2{mousePos.x, mousePos.y};
   float wheel = GetMouseWheelMove();
 
   if (wheel != 0.0f) {
-    Vector2 worldBefore = GetScreenToWorld2D(mouse, *camera);
+    // Convert camera to raylib Camera2D for GetScreenToWorld2D
+    Camera2D raylibCam = {
+      Vector2{camera->offset.x, camera->offset.y},
+      Vector2{camera->target.x, camera->target.y},
+      camera->rotation,
+      camera->zoom
+    };
+
+    Vector2 worldBefore = GetScreenToWorld2D(mouse, raylibCam);
 
     camera->zoom += wheel * camera->ZOOM_SPEED;
     camera->zoom = Clamp(camera->zoom, camera->ZOOM_MIN, camera->ZOOM_MAX);
-    Vector2 worldAfter = GetScreenToWorld2D(mouse, *camera);
+
+    raylibCam.zoom = camera->zoom;
+    Vector2 worldAfter = GetScreenToWorld2D(mouse, raylibCam);
 
     camera->target.x += (worldBefore.x - worldAfter.x);
     camera->target.y += (worldBefore.y - worldAfter.y);

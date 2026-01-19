@@ -1,5 +1,6 @@
 #pragma once
 
+#include "raylib.h"  // Include first to avoid conflicts with forward declarations
 #include "../common/position_2d.h"
 #include "../common/game_object.h"
 #include "../graphics.h"

@@ -10,17 +10,8 @@ Position2D::Position2D(int x_, int y_):
     y { (float) y_ }
 {}
 
-Position2D::Position2D(Vector2 vect):
-    x { vect.x },
-    y { vect.y }
-{}
-
 Position2D& Position2D::operator+=(const Position2D& right) {
     x += right.x;
     y += right.y;
     return *this;
-}
-
-Position2D::operator const Vector2() const {
-    return Vector2 {x, y};
 }

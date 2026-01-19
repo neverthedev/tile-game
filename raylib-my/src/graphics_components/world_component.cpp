@@ -1,11 +1,11 @@
 #include "world_component.h"
 
-#include "raylib.h"
-
 #include "../common/game_error.h"
+#include "../common/color_2d.h"
 #include "../graphics.h"
 #include "../game_world.h"
 #include "../world_tiles/tile.h"
+#include "raylib.h"  // For raylib-specific functions still needed temporarily
 
 WorldGraphicsComponent::WorldGraphicsComponent():
   GraphicsComponent(),
@@ -13,9 +13,9 @@ WorldGraphicsComponent::WorldGraphicsComponent():
 {}
 
 void WorldGraphicsComponent::drawIsoTileFrame(Graphics& grph, Position2D pos) {
-  Vector2 center = grph.GridToScreen(pos);
+  Position2D center = grph.GridToScreen(pos);
 
-  grph.DrawDiamondFrame(center, MAGENTA, false, 1.5f);
+  grph.DrawDiamondFrame(center, Color2D::Magenta(), false, 1.5f);  // MAGENTA
 }
 
 void WorldGraphicsComponent::Render(GameObject& wld, Graphics& grph) {
@@ -23,10 +23,10 @@ void WorldGraphicsComponent::Render(GameObject& wld, Graphics& grph) {
   if (!world) throw GameError("Incorrect object type provided!");
 
   if (!world->IsInitialized()) {
-    world->GetCamera().UpdateFromCamera2D(grph.camera);
+    world->GetCamera().UpdateFromGrphCamera(grph.GetGrphCamera());
+
     world->SetInitialized();
   }
-
   world->GetCamera().Render(grph);
 
   Position2D gridF = grph.MouseToWorld2D();
@@ -34,7 +34,7 @@ void WorldGraphicsComponent::Render(GameObject& wld, Graphics& grph) {
 
   ClearBackground(RAYWHITE);
 
-  BeginMode2D(grph.camera);
+  grph.BeginMode2D();
     if (!initialized) {
       float width =  0.5 * grph.TileWidth * (world->MapWidth + world->MapHeight);
       float height = 0.5 * grph.TileHeight * (world->MapWidth + world->MapHeight);
@@ -62,7 +62,7 @@ void WorldGraphicsComponent::Render(GameObject& wld, Graphics& grph) {
 
   DrawTexture(mapTexture, -grph.Correction.x, -grph.Correction.y, WHITE);
   drawIsoTileFrame(grph, gridF);
-  EndMode2D();
+  grph.EndMode2D();
   DrawFPS(10, 10);
 }
 

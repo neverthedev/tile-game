@@ -2,15 +2,17 @@
 
 #include "raylib.h"
 #include "raymath.h"
+#include "../common/position_2d.h"
 
 InputComponent::InputComponent() {}
 
-bool InputComponent::IsKeyDown(KeyboardKey key) {
+bool InputComponent::IsKeyDown(int key) { // TODO: Consider switching to class/enum instead of int
   return ::IsKeyDown(key);
 }
 
 Position2D InputComponent::GetMousePosition() {
-  return (Position2D) ::GetMousePosition();
+  Vector2 pos = ::GetMousePosition();
+  return Position2D(pos.x, pos.y);
 }
 
 float InputComponent::GetMouseWheelMove() {

@@ -1,4 +1,5 @@
 #include "tile_terrain_type.h"
+#include "../graphics.h"
 
 #include <iostream>
 

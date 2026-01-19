@@ -10,7 +10,7 @@ public:
     virtual ~InputComponent();
 
 protected:
-    bool IsKeyDown(KeyboardKey);
+    bool IsKeyDown(int key);
     Position2D GetMousePosition();
     float GetMouseWheelMove();
     float Clamp(float, float, float);

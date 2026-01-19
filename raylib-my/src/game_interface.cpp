@@ -1,6 +1,20 @@
 #include "game_interface.h"
 #include "services/service_locator.h"
+#include "common/position_2d.h"
+#include "common/rectangle_2d.h"
+
+// Helper function for collision detection (will be moved to Graphics later)
 #include "raylib.h"
+static bool CheckCollision(Position2D point, Rectangle2D rect) {
+    return ::CheckCollisionPointRec(
+        Vector2{point.x, point.y},
+        Rectangle{rect.x, rect.y, rect.width, rect.height}
+    );
+}
+static Position2D GetMousePos() {
+    Vector2 pos = ::GetMousePosition();
+    return Position2D{pos.x, pos.y};
+}
 
 // TODO: Doesnt' follow component pattern, consider to refactor
 GameInterface::GameInterface(int w, int h):
@@ -28,16 +42,13 @@ void GameInterface::AddArea(GameObject& obj, Rectangle2D pos, int priority) {
 }
 
 void GameInterface::HandleInput() {
-  Vector2 mouse = GetMousePosition();
+  Position2D mouse = GetMousePos();
 
   // Iterate in reverse priority order (highest priority first)
   for(int i = sortedIndices.size() - 1; i >= 0; --i) {
     GameArea& gameArea = gameAreas[sortedIndices[i]];
 
-    Rectangle rect = { gameArea.position.x, gameArea.position.y,
-                       gameArea.position.width, gameArea.position.height };
-
-    if (CheckCollisionPointRec(mouse, rect)) {
+    if (CheckCollision(mouse, gameArea.position)) {
       gameArea.HandleInput();
       break;
     }
