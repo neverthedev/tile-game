@@ -1,7 +1,7 @@
 #include "tiles_manager.h"
 
 #include "../common/rectangle_2d.h"
-#include "../graphics/raylib_graphics.h"
+#include "../graphics/resources_system.h"
 
 TilesManager::TilesManager() {
   std::string txr = "../../textures/terrain-1.png";
@@ -17,9 +17,9 @@ TilesManager::TilesManager() {
   tileTypes.emplace("Deep Water", WorldTileTerrainType { "Deep Water", 0.5, true, "../../textures/ocean_sm.png", Rectangle2D{0, 0, 0, 0} });
 }
 
-void TilesManager::LoadTextures(RaylibGraphics& grph) {
+void TilesManager::LoadTextures(ResourcesSystem& resources) {
   for (auto& [name, tileType]: tileTypes) {
-    tileType.LoadTexture(grph);
+    tileType.LoadTexture(resources);
   }
 }
 

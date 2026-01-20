@@ -10,7 +10,7 @@
 
 // Forward declaration
 class WorldTile;
-class RaylibGraphics;
+class ResourcesSystem;
 
 class WorldTileTerrainType {
   friend class WorldTile;
@@ -19,7 +19,7 @@ public:
   WorldTileTerrainType(std::string, float, bool, std::string, Rectangle2D);
   WorldTile* NewTile(Position2D) const;
   ~WorldTileTerrainType();
-  void LoadTexture(RaylibGraphics& grph);
+  void LoadTexture(ResourcesSystem& resources);
   TextureHandle Texture() const;
   ImageHandle TextureImage() const;
 

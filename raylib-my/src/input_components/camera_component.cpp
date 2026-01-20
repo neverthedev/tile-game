@@ -3,6 +3,7 @@
 #include "../game_camera.h"
 #include "../graphics/input_system.h"
 #include "../graphics/collision_system.h"
+#include "raylib.h"
 #include "raymath.h"
 
 CameraInputComponent::CameraInputComponent(): InputComponent() {}

@@ -4,6 +4,7 @@
 #include "common/game_error.h"
 #include "menus/factory.h"
 #include "graphics/raylib_graphics.h"
+#include "graphics/resources_system.h"
 #include "game_interface.h"
 #include "services/service_locator.h"
 
@@ -22,13 +23,13 @@ int main(void) {
 
   graphics.InitScreen();
 
-  ServiceLocator::LoadResources(graphics);
+  ServiceLocator::LoadResources(static_cast<ResourcesSystem&>(graphics));
 
   while (!graphics.Done()) {
-    interface.HandleInput(graphics, graphics);
-    interface.Update(graphics);
+    interface.HandleInput(static_cast<InputSystem&>(graphics), static_cast<CollisionSystem&>(graphics));
+    interface.Update(static_cast<CollisionSystem&>(graphics));
     graphics.BeginDrawing();
-      interface.Render(graphics);
+      interface.Render(static_cast<RenderSystem&>(graphics));
     graphics.EndDrawing();
   }
 

@@ -1,9 +1,7 @@
 #pragma once
 
 #include <cmath>
-#include <unordered_map>
-
-#include "raylib.h"
+#include <memory>
 
 #include "collision_system.h"
 #include "input_system.h"
@@ -17,88 +15,75 @@
 #include "../common/texture_handle.h"
 
 class RaylibGraphics : public InputSystem,
-                 public CollisionSystem,
-                 public RenderSystem,
-                 public ResourcesSystem {
+                       public CollisionSystem,
+                       public RenderSystem,
+                       public ResourcesSystem {
 public:
-    int ScreenWidth;
-    int ScreenHeight;
-    float TileWidth;
-    float TileHeight;
-    int TargetFrameRate;
-    const char *Title;
-    bool Initialized;
-    ImageHandle Dst;
-    Position2D Correction;
+  int ScreenWidth;
+  int ScreenHeight;
+  float TileWidth;
+  float TileHeight;
+  int TargetFrameRate;
+  const char *Title;
+  bool Initialized;
+  ImageHandle Dst;
+  Position2D Correction;
 
-    RaylibGraphics(int, int, float, float, const char *, int);
-    void InitScreen();
-    bool Done();
-    ~RaylibGraphics();
+  RaylibGraphics(int, int, float, float, const char *, int);
+  void InitScreen();
+  bool Done();
+  ~RaylibGraphics();
 
-    // InputSystem interface implementation
-    Position2D GetMousePosition() const override;
-    bool IsKeyPressed(int key) const override;
-    bool IsMouseButtonPressed(int button) const override;
-    bool IsKeyDown(int key) const override;
-    float GetMouseWheelMove() const override;
+  // InputSystem interface implementation
+  Position2D GetMousePosition() const override;
+  bool IsKeyPressed(int key) const override;
+  bool IsMouseButtonPressed(int button) const override;
+  bool IsKeyDown(int key) const override;
+  float GetMouseWheelMove() const override;
 
-    // CollisionSystem interface implementation
-    bool CheckCollisionPointRec(Position2D point, Rectangle2D rect) const override;
-    bool CheckCollisionRecs(Rectangle2D rec1, Rectangle2D rec2) const override;
+  // CollisionSystem interface implementation
+  bool CheckCollisionPointRec(Position2D point, Rectangle2D rect) const override;
+  bool CheckCollisionRecs(Rectangle2D rec1, Rectangle2D rec2) const override;
 
-    // RenderSystem interface implementation
-    void BeginDrawing() override;
-    void EndDrawing() override;
-    void BeginMode2D() override;
-    void EndMode2D() override;
-    void DrawRectangle(Rectangle2D rect, Color2D color) override;
-    void DrawDiamondFrame(Position2D center, Color2D color, bool dst, float thickness) override;
-    void UpdateGrphCamera(const GrphCamera& camera) override;
-    const GrphCamera& GetGrphCamera() const override;
-    Position2D GridToScreen(Position2D pos) override;
-    Position2D ScreenToWorld2D(Position2D screenPos) override;
-    Position2D MouseToWorld2D() override;
-    float GetTileWidth() const override;
-    float GetTileHeight() const override;
-    Position2D GetCorrection() const override;
-    ImageHandle GetDst() const override;
-    void ImageDraw(ImageHandle dst, ImageHandle src, Rectangle2D srcRect, Rectangle2D dstRect, Color2D tint) override;
-    int GetImageWidth(ImageHandle image) const override;
-    int GetImageHeight(ImageHandle image) const override;
-    void ClearBackground(Color2D color) override;
-    void DrawTexture(TextureHandle texture, Position2D position, Color2D tint) override;
-    void DrawFPS(int x, int y) override;
-    void SetDst(ImageHandle dst) override;
-    void SetCorrection(Position2D correction) override;
+  // RenderSystem interface implementation
+  void BeginDrawing() override;
+  void EndDrawing() override;
+  void BeginMode2D() override;
+  void EndMode2D() override;
+  void DrawRectangle(Rectangle2D rect, Color2D color) override;
+  void DrawDiamondFrame(Position2D center, Color2D color, bool dst, float thickness) override;
+  void UpdateGrphCamera(const GrphCamera& camera) override;
+  const GrphCamera& GetGrphCamera() const override;
+  Position2D GridToScreen(Position2D pos) override;
+  Position2D ScreenToWorld2D(Position2D screenPos) override;
+  Position2D MouseToWorld2D() override;
+  float GetTileWidth() const override;
+  float GetTileHeight() const override;
+  Position2D GetCorrection() const override;
+  ImageHandle GetDst() const override;
+  void ImageDraw(ImageHandle dst, ImageHandle src, Rectangle2D srcRect, Rectangle2D dstRect, Color2D tint) override;
+  int GetImageWidth(ImageHandle image) const override;
+  int GetImageHeight(ImageHandle image) const override;
+  void ClearBackground(Color2D color) override;
+  void DrawTexture(TextureHandle texture, Position2D position, Color2D tint) override;
+  void DrawFPS(int x, int y) override;
+  void SetDst(ImageHandle dst) override;
+  void SetCorrection(Position2D correction) override;
 
-    // ResourcesSystem interface implementation
-    TextureHandle LoadTexture(const char* filename) override;
-    ImageHandle LoadImage(const char* filename) override;
-    ImageHandle LoadImageFromTexture(TextureHandle texture) override;
-    TextureHandle LoadTextureFromImage(ImageHandle image) override;
-    void UnloadTexture(TextureHandle texture) override;
-    void UnloadImage(ImageHandle image) override;
-    void ImageCrop(ImageHandle& image, Rectangle2D rect) override;
-    void ImageDrawLineEx(ImageHandle dst, Position2D start, Position2D end, float thickness, Color2D color) override;
-    ImageHandle GenImageColor(float width, float height, Color2D color) override;
-
-    // Deprecated methods (for compatibility during migration)
-    Texture2D LoadTextures(const char* filename);
-
-    // Internal accessors (public for now, should be interface-based later)
-    Texture2D& GetRaylibTexture(TextureHandle handle);
-    Image& GetRaylibImage(ImageHandle handle);
-    const Texture2D& GetRaylibTexture(TextureHandle handle) const;
-    const Image& GetRaylibImage(ImageHandle handle) const;
+  // ResourcesSystem interface implementation
+  TextureHandle LoadTexture(const char* filename) override;
+  ImageHandle LoadImage(const char* filename) override;
+  ImageHandle LoadImageFromTexture(TextureHandle texture) override;
+  TextureHandle LoadTextureFromImage(ImageHandle image) override;
+  void UnloadTexture(TextureHandle texture) override;
+  void UnloadImage(ImageHandle image) override;
+  void ImageCrop(ImageHandle& image, Rectangle2D rect) override;
+  void ImageDrawLineEx(ImageHandle dst, Position2D start, Position2D end, float thickness, Color2D color) override;
+  ImageHandle GenImageColor(float width, float height, Color2D color) override;
 
 private:
-    GrphCamera camera;
-    Camera2D ConvertToRaylibCamera(const GrphCamera& camera) const;
-
-    // Resource management
-    std::unordered_map<uint32_t, Texture2D> textures;
-    std::unordered_map<uint32_t, Image> images;
-    uint32_t nextTextureId = 1;
-    uint32_t nextImageId = 1;
+  GrphCamera camera;
+  struct Impl;
+  std::unique_ptr<Impl> impl;
+  void* ConvertToRaylibCamera();
 };

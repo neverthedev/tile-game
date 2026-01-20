@@ -1,5 +1,5 @@
 #include "tile_terrain_type.h"
-#include "../graphics/raylib_graphics.h"
+#include "../graphics/resources_system.h"
 
 #include <iostream>
 
@@ -16,15 +16,15 @@ bool WorldTileTerrainType::emptyTextureSrcRect() {
   return (textureSrcRect.width == 0) || (textureSrcRect.height == 0);
 }
 
-void WorldTileTerrainType::LoadTexture(RaylibGraphics& grph) {
-  ImageHandle fullImage = grph.LoadImage(texurePath.c_str());
+void WorldTileTerrainType::LoadTexture(ResourcesSystem& resources) {
+  ImageHandle fullImage = resources.LoadImage(texurePath.c_str());
   if (!emptyTextureSrcRect()) {
     Rectangle2D cropRect { textureSrcRect.x, textureSrcRect.y, textureSrcRect.width, textureSrcRect.height };
-    grph.ImageCrop(fullImage, cropRect);
+    resources.ImageCrop(fullImage, cropRect);
   }
-  textureObj = grph.LoadTextureFromImage(fullImage);
-  textureImage = grph.LoadImageFromTexture(textureObj);
-  grph.UnloadImage(fullImage);
+  textureObj = resources.LoadTextureFromImage(fullImage);
+  textureImage = resources.LoadImageFromTexture(textureObj);
+  resources.UnloadImage(fullImage);
   initialized = true;
 }
 

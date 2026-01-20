@@ -46,14 +46,13 @@ This document lists all identified improvements for the project architecture.
 
 ---
 ## TODOs
-1. Reduce RaylibGraphics direct usage, rely on interfaces only
-2. GameInterface doesn't follow game object component pattern
-3. Why game object, empty component, world_component use forward declarations? Why include interfaces
-4. Change "rander" to "rnd" in graphics components
-5. Get close look at worldTileMap in world grapchics component
-6. How did the constants in camera input component survived?
-7. Need to pass Graphics/ResourcesSystem to properly unload textures in tiles_manager
-8.
+1. GameInterface doesn't follow game object component pattern
+2. Why game object, empty component, world_component use forward declarations? Why include interfaces
+3. Change "rander" to "rnd" in graphics components
+4. Get close look at worldTileMap in world grapchics component
+5. How did the constants in camera input component survived?
+6. Need to pass Graphics/ResourcesSystem to properly unload textures in tiles_manager
+7. Mark GetRaylibTexture / GetRaylibImage as private or remove them from the public header
 
 
 ## Task Status Legend
