@@ -25,6 +25,7 @@ public:
   // Coordinate transformations
   virtual Position2D GridToScreen(Position2D pos) = 0;
   virtual Position2D ScreenToWorld2D(Position2D screenPos) = 0;
+  virtual Position2D ScreenToWorldWithCamera(const GrphCamera& camera) = 0;
   virtual Position2D MouseToWorld2D() = 0;
 
   // Tile rendering properties (public members or getters)

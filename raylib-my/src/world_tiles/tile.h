@@ -2,7 +2,6 @@
 
 #include "../common/position_2d.h"
 #include "../common/game_object.h"
-#include "../graphics/raylib_graphics.h"
 #include "tile_terrain_type.h"
 #include "decorations/decoration.h"
 #include "resources/resource.h"

@@ -50,10 +50,8 @@ This document lists all identified improvements for the project architecture.
 2. Why game object, empty component, world_component use forward declarations? Why include interfaces
 3. Change "rander" to "rnd" in graphics components
 4. Get close look at worldTileMap in world grapchics component
-5. How did the constants in camera input component survived?
-6. Need to pass Graphics/ResourcesSystem to properly unload textures in tiles_manager
-7. Mark GetRaylibTexture / GetRaylibImage as private or remove them from the public header
-
+5. Need to pass Graphics/ResourcesSystem to properly unload textures in tiles_manager
+6. CameraGraphicsComponent looks like grphCamera is missused there
 
 ## Task Status Legend
 - 📋 TODO: Not started

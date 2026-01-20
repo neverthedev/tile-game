@@ -1,9 +1,12 @@
 #pragma once
 
-#include "graphics/raylib_graphics.h"
 #include "common/game_object.h"
 #include "common/position_2d.h"
 #include "common/grph_camera.h"
+
+class InputComponent;
+class GraphicsComponent;
+class UpdateComponent;
 
 class GameCamera: public GameObject {
 public:
@@ -16,6 +19,7 @@ public:
   Position2D target;      // Camera target (rotation and zoom origin)
   float rotation;         // Camera rotation in degrees
   float zoom;             // Camera zoom (scaling), should be 1.0f by default
+  float pendingWheel;
 
   GameCamera(std::unique_ptr<InputComponent> inp, std::unique_ptr<GraphicsComponent> grph, std::unique_ptr<UpdateComponent> upd);
   void UpdateFromGrphCamera(const GrphCamera& grphCamera);

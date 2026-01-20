@@ -8,7 +8,8 @@ GameCamera::GameCamera(std::unique_ptr<InputComponent> inp, std::unique_ptr<Grap
   offset { 0.0f, 0.0f },
   target { 0.0f, 0.0f },
   rotation { 0 },
-  zoom { 1.0f }
+  zoom { 1.0f },
+  pendingWheel { 0.0f }
 {}
 
 void GameCamera::UpdateFromGrphCamera(const GrphCamera& src) {

@@ -7,6 +7,7 @@
 #include "input_system.h"
 #include "render_system.h"
 #include "resources_system.h"
+#include "../common/keyboard_2d.h"
 #include "../common/color_2d.h"
 #include "../common/grph_camera.h"
 #include "../common/image_handle.h"
@@ -36,9 +37,9 @@ public:
 
   // InputSystem interface implementation
   Position2D GetMousePosition() const override;
-  bool IsKeyPressed(int key) const override;
+  bool IsKeyPressed(Keyboard2D::Key key) const override;
   bool IsMouseButtonPressed(int button) const override;
-  bool IsKeyDown(int key) const override;
+  bool IsKeyDown(Keyboard2D::Key key) const override;
   float GetMouseWheelMove() const override;
 
   // CollisionSystem interface implementation
@@ -56,6 +57,7 @@ public:
   const GrphCamera& GetGrphCamera() const override;
   Position2D GridToScreen(Position2D pos) override;
   Position2D ScreenToWorld2D(Position2D screenPos) override;
+  Position2D ScreenToWorldWithCamera(const GrphCamera& camera) override;
   Position2D MouseToWorld2D() override;
   float GetTileWidth() const override;
   float GetTileHeight() const override;

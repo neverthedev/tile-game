@@ -44,7 +44,6 @@ RaylibGraphics::RaylibGraphics(int s_w, int s_h, float t_w, float t_h, const cha
   impl { std::make_unique<Impl>() }
 {}
 
-
 void* RaylibGraphics::ConvertToRaylibCamera() {
   // store Camera2D in impl and return pointer to it
   impl->lastCamera = Camera2D {
@@ -251,6 +250,18 @@ Position2D RaylibGraphics::MouseToWorld2D() {
   return ScreenToWorld2D(FromRaylibVector2(world));
 }
 
+Position2D RaylibGraphics::ScreenToWorldWithCamera(const GrphCamera& grphCamera) {
+  Vector2 mousePos = ::GetMousePosition();
+  Camera2D raylibCam = {
+    ToRaylibVector2(grphCamera.offset),
+    ToRaylibVector2(grphCamera.target),
+    grphCamera.rotation,
+    grphCamera.zoom
+  };
+  Vector2 world = ::GetScreenToWorld2D(mousePos, raylibCam);
+  return FromRaylibVector2(world);
+}
+
 void RaylibGraphics::DrawDiamondFrame(Position2D center, Color2D color, bool dst = false, float thickness = 1.0f) {
   Vector2 top { center.x, center.y - TileHeight * 0.5f };
   Vector2 bottom { center.x, center.y + TileHeight * 0.5f };
@@ -295,7 +306,8 @@ Position2D RaylibGraphics::GetMousePosition() const {
   return FromRaylibVector2(pos);
 }
 
-bool RaylibGraphics::IsKeyPressed(int key) const {
+
+bool RaylibGraphics::IsKeyPressed(Keyboard2D::Key key) const {
   return ::IsKeyPressed(key);
 }
 
@@ -303,7 +315,7 @@ bool RaylibGraphics::IsMouseButtonPressed(int button) const {
   return ::IsMouseButtonPressed(button);
 }
 
-bool RaylibGraphics::IsKeyDown(int key) const {
+bool RaylibGraphics::IsKeyDown(Keyboard2D::Key key) const {
   return ::IsKeyDown(key);
 }
 
