@@ -1,22 +1,13 @@
 #include "game_interface.h"
+
 #include "services/service_locator.h"
 #include "common/position_2d.h"
 #include "common/rectangle_2d.h"
+#include "graphics/collision_system.h"
+#include "graphics/input_system.h"
+#include "graphics/render_system.h"
 
-// Helper function for collision detection (will be moved to Graphics later)
-#include "raylib.h"
-static bool CheckCollision(Position2D point, Rectangle2D rect) {
-    return ::CheckCollisionPointRec(
-        Vector2{point.x, point.y},
-        Rectangle{rect.x, rect.y, rect.width, rect.height}
-    );
-}
-static Position2D GetMousePos() {
-    Vector2 pos = ::GetMousePosition();
-    return Position2D{pos.x, pos.y};
-}
-
-// TODO: Doesnt' follow component pattern, consider to refactor
+// TODO: Doesn't follow component pattern, consider to refactor
 GameInterface::GameInterface(int w, int h):
   screenWidth { w },
   screenHeight { h },
@@ -41,29 +32,29 @@ void GameInterface::AddArea(GameObject& obj, Rectangle2D pos, int priority) {
     });
 }
 
-void GameInterface::HandleInput() {
-  Position2D mouse = GetMousePos();
+void GameInterface::HandleInput(InputSystem& input, CollisionSystem& collision) {
+  Position2D mouse = input.GetMousePosition();
 
   // Iterate in reverse priority order (highest priority first)
   for(int i = sortedIndices.size() - 1; i >= 0; --i) {
     GameArea& gameArea = gameAreas[sortedIndices[i]];
 
-    if (CheckCollision(mouse, gameArea.position)) {
-      gameArea.HandleInput();
+    if (collision.CheckCollisionPointRec(mouse, gameArea.position)) {
+      gameArea.HandleInput(input, collision);
       break;
     }
   }
 }
 
-void GameInterface::Update() {
+void GameInterface::Update(CollisionSystem& collision) {
   for(size_t idx : sortedIndices) {
-    gameAreas[idx].Update();
+    gameAreas[idx].Update(collision);
   }
 }
 
-void GameInterface::Render(Graphics& grph) {
+void GameInterface::Render(RenderSystem& renderer) {
   for(size_t idx : sortedIndices) {
-    gameAreas[idx].Render(grph);
+    gameAreas[idx].Render(renderer);
   }
 }
 

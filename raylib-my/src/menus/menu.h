@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../common/rectangle_2d.h"
-#include "../graphics.h"
+#include "../graphics/raylib_graphics.h"
 #include "../common/game_object.h"
 #include "../input_components/component.h"
 #include "../graphics_components/component.h"

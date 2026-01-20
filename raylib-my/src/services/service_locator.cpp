@@ -1,7 +1,7 @@
 #include "service_locator.h"
 
 #include "tiles_manager.h"
-#include "../graphics.h"
+#include "../graphics/raylib_graphics.h"
 
 #include <cassert>
 
@@ -15,7 +15,7 @@ void ServiceLocator::Shutdown() {
   tilesManager.reset();
 }
 
-void ServiceLocator::LoadResources(Graphics& graphics) {
+void ServiceLocator::LoadResources(RaylibGraphics& graphics) {
   assert(tilesManager != nullptr && "ServiceLocator not initialized!");
   tilesManager->LoadTextures(graphics);
 }

@@ -4,7 +4,7 @@
 #include <map>
 #include <memory>
 
-#include "graphics.h"
+#include "graphics/raylib_graphics.h"
 #include "common/game_error.h"
 #include "common/game_object.h"
 #include "game_camera.h"
@@ -35,5 +35,5 @@ private:
   void initializeGrid();
   void initializeTyleTypes();
 
-  void afterScreenInitialization(Graphics& graphics);
+  void afterScreenInitialization(RaylibGraphics& graphics);
 };

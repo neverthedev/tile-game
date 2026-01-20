@@ -4,12 +4,12 @@
 
 // Forward declarations
 class GameObject;
-class Graphics;
+class RenderSystem;
 class DecorationMenu;
 
 class DecorationMenuGraphicsComponent: public GraphicsComponent {
 public:
   DecorationMenuGraphicsComponent();
-  virtual void Render(GameObject&, Graphics&) override;
+  virtual void Render(GameObject&, RenderSystem&) override;
   ~DecorationMenuGraphicsComponent() override;
 };

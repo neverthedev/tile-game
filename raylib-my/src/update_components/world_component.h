@@ -9,6 +9,6 @@ class GameWorld;
 class WorldUpdateComponent: public UpdateComponent {
 public:
   WorldUpdateComponent();
-  virtual void Update(GameObject&) override;
+  virtual void Update(GameObject&, CollisionSystem&) override;
   ~WorldUpdateComponent() override;
 };

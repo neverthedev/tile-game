@@ -8,6 +8,6 @@ class WorldTile;
 class TileInputComponent: public InputComponent {
 public:
   TileInputComponent();
-  virtual void HandleInput(GameObject&) override;
+  virtual void HandleInput(GameObject&, InputSystem&, CollisionSystem&) override;
   ~TileInputComponent() override;
 };

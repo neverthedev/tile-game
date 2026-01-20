@@ -1,8 +1,11 @@
 #include "game_object.h"
-#include "../input_components/component.h"
+
+#include "../graphics/collision_system.h"
+#include "../graphics/input_system.h"
+#include "../graphics/render_system.h"
 #include "../graphics_components/component.h"
+#include "../input_components/component.h"
 #include "../update_components/component.h"
-#include "../graphics.h"
 
 GameObject::GameObject() {}
 
@@ -16,21 +19,21 @@ GameObject::GameObject(
   updateComponent { std::move(upd) }
 {}
 
-void GameObject::HandleInput() {
+void GameObject::HandleInput(InputSystem& input, CollisionSystem& collision) {
   if (inputComponent) {
-    inputComponent->HandleInput(*this);
+    inputComponent->HandleInput(*this, input, collision);
   }
 }
 
-void GameObject::Update() {
+void GameObject::Update(CollisionSystem& collision) {
   if (updateComponent) {
-    updateComponent->Update(*this);
+    updateComponent->Update(*this, collision);
   }
 }
 
-void GameObject::Render(Graphics& grph) {
+void GameObject::Render(RenderSystem& renderer) {
   if (graphicsComponent) {
-    graphicsComponent->Render(*this, grph);
+    graphicsComponent->Render(*this, renderer);
   }
 }
 

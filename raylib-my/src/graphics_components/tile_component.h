@@ -8,6 +8,6 @@ class WorldTile;
 class TileGraphicsComponent: public GraphicsComponent {
 public:
   TileGraphicsComponent();
-  virtual void Render(GameObject&, Graphics&) override;
+  virtual void Render(GameObject&, RenderSystem&) override;
   ~TileGraphicsComponent() override;
 };

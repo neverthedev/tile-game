@@ -8,7 +8,7 @@ class ServiceLocator {
 public:
   static void Initialize();
   static void Shutdown();
-  static void LoadResources(class Graphics& graphics);
+  static void LoadResources(class RaylibGraphics& graphics);
   static TilesManager& GetTilesManager();
 
 private:

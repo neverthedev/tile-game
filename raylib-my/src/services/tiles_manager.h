@@ -8,12 +8,12 @@
 #include "../world_tiles/tile_terrain_type.h"
 
 // Forward declaration
-class Graphics;
+class RaylibGraphics;
 
 class TilesManager {
 public:
   TilesManager();
-  void LoadTextures(Graphics&);
+  void LoadTextures(RaylibGraphics&);
   WorldTile* NewTile(std::string, Position2D) const;
   std::vector<std::string> TileTypes() const;
   ~TilesManager();

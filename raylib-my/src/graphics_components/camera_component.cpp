@@ -1,13 +1,13 @@
 #include "camera_component.h"
 
-#include "../graphics.h"
+#include "../graphics/render_system.h"
 #include "../game_camera.h"
 #include "../common/game_error.h"
 #include "../common/grph_camera.h"
 
 CameraGraphicsComponent::CameraGraphicsComponent(): GraphicsComponent() {}
 
-void CameraGraphicsComponent::Render(GameObject& cam, Graphics& grph) {
+void CameraGraphicsComponent::Render(GameObject& cam, RenderSystem& renderer) {
   GameCamera *camera = dynamic_cast<GameCamera *>(&cam);
   if (!camera) throw GameError("Incorrect object type provided!");
 
@@ -17,7 +17,7 @@ void CameraGraphicsComponent::Render(GameObject& cam, Graphics& grph) {
   grphCam.rotation = camera->rotation;
   grphCam.zoom = camera->zoom;
 
-  grph.UpdateGrphCamera(grphCam);
+  renderer.UpdateGrphCamera(grphCam);
 }
 
 CameraGraphicsComponent::~CameraGraphicsComponent() {}

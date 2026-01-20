@@ -9,6 +9,6 @@ class DecorationMenu;
 class DecorationMenuUpdateComponent: public UpdateComponent {
 public:
   DecorationMenuUpdateComponent();
-  void virtual Update(GameObject&) override;
+  void virtual Update(GameObject&, CollisionSystem&) override;
   ~DecorationMenuUpdateComponent();
 };

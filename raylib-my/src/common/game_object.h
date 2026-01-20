@@ -3,7 +3,9 @@
 #include <memory>
 
 // Forward declarations
-class Graphics;
+class InputSystem;
+class CollisionSystem;
+class RenderSystem;
 class InputComponent;
 class GraphicsComponent;
 class UpdateComponent;
@@ -14,9 +16,9 @@ public:
   GameObject(GameObject&&) noexcept = default;
   GameObject& operator=(GameObject&&) noexcept = default;
 
-  virtual void HandleInput();
-  virtual void Update();
-  virtual void Render(Graphics&);
+  virtual void HandleInput(InputSystem&, CollisionSystem&);
+  virtual void Update(CollisionSystem&);
+  virtual void Render(RenderSystem&);
   virtual ~GameObject();
 
 protected:

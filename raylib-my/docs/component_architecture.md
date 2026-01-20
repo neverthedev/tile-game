@@ -4,12 +4,14 @@
 
 The game uses a **Component-Based Architecture** where game objects delegate their behavior to specialized component objects. This separates concerns and enables flexible composition of behaviors.
 
+**Updated:** January 19, 2026 - Now uses interface parameters for decoupled system access.
+
 ## Core Concept
 
 Every `GameObject` owns three types of components:
-- **InputComponent** - Handles input processing
-- **GraphicsComponent** - Handles rendering
-- **UpdateComponent** - Handles game logic updates (optional)
+- **InputComponent** - Handles input processing (receives `InputSystem&` and `CollisionSystem&`)
+- **GraphicsComponent** - Handles rendering (receives `RenderSystem&`)
+- **UpdateComponent** - Handles game logic updates (receives `CollisionSystem&`, optional)
 
 ## Class Hierarchy
 
@@ -23,21 +25,43 @@ abstract class GameObject {
   # unique_ptr<UpdateComponent> updateComponent
   --
   # GameObject(unique_ptr<Input>, unique_ptr<Graphics>, unique_ptr<Update>)
-  + {abstract} HandleInput()
-  + {abstract} Update()
-  + {abstract} Render(Graphics&)
+  + {abstract} HandleInput(InputSystem&, CollisionSystem&)
+  + {abstract} Update(CollisionSystem&)
+  + {abstract} Render(RenderSystem&)
 }
 
 abstract class InputComponent {
-  + {abstract} HandleInput(GameObject&)
+  + {abstract} HandleInput(GameObject&, InputSystem&, CollisionSystem&)
 }
 
 abstract class GraphicsComponent {
-  + {abstract} Render(GameObject&, Graphics&)
+  + {abstract} Render(GameObject&, RenderSystem&)
 }
 
 abstract class UpdateComponent {
-  + {abstract} Update(GameObject&)
+  + {abstract} Update(GameObject&, CollisionSystem&)
+}
+
+interface InputSystem {
+  + GetMousePosition(): Position2D
+  + IsKeyPressed(int): bool
+  + IsKeyDown(int): bool
+  + GetMouseWheelMove(): float
+}
+
+interface CollisionSystem {
+  + CheckCollisionPointRec(Position2D, Rectangle2D): bool
+  + CheckCollisionRecs(Rectangle2D, Rectangle2D): bool
+}
+
+interface RenderSystem {
+  + BeginDrawing()
+  + EndDrawing()
+  + BeginMode2D()
+  + EndMode2D()
+  + DrawRectangle(Rectangle2D, Color2D)
+  + GridToScreen(Position2D): Position2D
+  + UpdateGrphCamera(GrphCamera)
 }
 
 class GameCamera
@@ -119,47 +143,53 @@ auto tile = new WorldTile(
 
 ### 2. Behavior Delegation
 
-GameObject delegates to its components:
+GameObject delegates to its components, passing system interfaces:
 
 ```cpp
-void GameObject::HandleInput() {
+void GameObject::HandleInput(InputSystem& input, CollisionSystem& collision) {
   if (inputComponent) {
-    inputComponent->HandleInput(*this);
+    inputComponent->HandleInput(*this, input, collision);
   }
 }
 
-void GameObject::Render(Graphics& grph) {
+void GameObject::Render(RenderSystem& renderer) {
   if (graphicsComponent) {
-    graphicsComponent->Render(*this, grph);
+    graphicsComponent->Render(*this, renderer);
   }
 }
 
-void GameObject::Update() {
+void GameObject::Update(CollisionSystem& collision) {
   if (updateComponent) {
-    updateComponent->Update(*this);
+    updateComponent->Update(*this, collision);
   }
 }
 ```
 
 ### 3. Component Implementation
 
-Components implement specific behavior:
+Components implement specific behavior using system interfaces:
 
 ```cpp
-void TileGraphicsComponent::Render(GameObject& obj, Graphics& grph) {
+void TileGraphicsComponent::Render(GameObject& obj, RenderSystem& renderer) {
   WorldTile& tile = static_cast<WorldTile&>(obj);
 
   // Access tile data
-  Position2D center = grph.GridToScreen(tile.Pos);
-  const Texture2D& texture = tile.Texture();
+  Position2D center = renderer.GridToScreen(tile.Pos);
+  ImageHandle textureImage = tile.TextureImage();
 
-  // Perform rendering
-  ImageDraw(grph.Dst, tile.TextureImage(), src, dst, WHITE);
-  grph.DrawDiamondFrame(center, BLACK, true, 1.0f);
+  // Perform rendering using interface methods
+  renderer.ImageDraw(renderer.GetDst(), textureImage, src, dst, Color2D::White());
+  renderer.DrawDiamondFrame(center, Color2D::Black(), true, 1.0f);
 
   tile.Dirty = false;
 }
 ```
+
+**Key Change:** Components now receive **system interfaces** (`InputSystem&`, `CollisionSystem&`, `RenderSystem&`) instead of concrete `Graphics&`. This:
+- ✅ Enables mocking for unit tests
+- ✅ Decouples game logic from rendering implementation
+- ✅ Follows Dependency Inversion Principle
+- ✅ Makes the codebase portable to other graphics libraries
 
 ## Sequence Diagram
 
@@ -168,28 +198,48 @@ void TileGraphicsComponent::Render(GameObject& obj, Graphics& grph) {
 participant "Game Loop" as Loop
 participant "GameObject" as Obj
 participant "InputComponent" as Input
+participant "InputSystem" as InputSys
+participant "CollisionSystem" as CollSys
 participant "UpdateComponent" as Update
 participant "GraphicsComponent" as Graphics
+participant "RenderSystem" as RenderSys
 
-Loop -> Obj: HandleInput()
+Loop -> Obj: HandleInput(input, collision)
 activate Obj
-Obj -> Input: HandleInput(this)
+Obj -> Input: HandleInput(this, input, collision)
 activate Input
-Input -> Input: Process input
+Input -> InputSys: GetMousePosition()
+activate InputSys
+InputSys --> Input: Position2D
+deactivate InputSys
+Input -> CollSys: CheckCollisionPointRec()
+activate CollSys
+CollSys --> Input: bool
+deactivate CollSys
 Input --> Obj:
 deactivate Input
 Obj --> Loop:
 deactivate Obj
 
-Loop -> Obj: Update()
+Loop -> Obj: Update(collision)
 activate Obj
-Obj -> Update: Update(this)
+Obj -> Update: Update(this, collision)
 activate Update
 Update -> Update: Update state
 Update --> Obj:
 deactivate Update
 Obj --> Loop:
 deactivate Obj
+
+Loop -> Obj: Render(renderer)
+activate Obj
+Obj -> Graphics: Render(this, renderer)
+activate Graphics
+Graphics -> RenderSys: DrawRectangle()
+activate RenderSys
+RenderSys -> RenderSys: Draw to screen
+RenderSys --> Graphics:
+deactivate RenderSys
 
 Loop -> Obj: Render(grph)
 activate Obj
@@ -210,10 +260,13 @@ deactivate Obj
 Each component handles one responsibility:
 - Input components know nothing about rendering
 - Graphics components don't handle input
-- Update components focus only on game logic
-
-### ✅ Reusability
-Components can be reused across different game objects:
+- Update components focus only on game with mock implementations:
+- Mock `InputSystem` to simulate user input
+- Mock `RenderSystem` for headless testing
+- Mock `CollisionSystem` to verify collision logic
+- Test input handling without graphics initialization
+- Test rendering without real display
+- Unit tests can run in CI/CD without display serverferent game objects:
 - Multiple objects can use the same component type
 - Easy to create variations by swapping components
 
@@ -232,10 +285,10 @@ Components can be tested independently:
 ### ✅ Extensibility
 Add new behaviors without modifying existing code:
 - Create new component types
-- Compose different component combinations
-- Override specific components for specialization
-
-## Example: WorldTile
+- Compose with interface parameters)
+tile.HandleInput(input, collision);  // → TileInputComponent::HandleInput(tile, input, collision)
+tile.Update(collision);              // → TileUpdateComponent::Update(tile, collision)
+tile.Render(renderer);               // → TileGraphicsComponent::Render(tile, renderer
 
 WorldTile uses the component architecture fully:
 
@@ -292,9 +345,61 @@ All cleanup happens automatically when GameWorld is destroyed - no manual delete
 | `TileUpdateComponent` | WorldTile | Update tile state (e.g., resource growth) |
 | `TileGraphicsComponent` | WorldTile | Render tile texture and frame |
 | `DecorationMenuInputComponent` | DecorationMenu | Handle menu input |
-| `DecorationMenuUpdateComponent` | DecorationMenu | Update menu state |
-| `DecorationMenuGraphicsComponent` | DecorationMenu | Render menu UI |
+| `System Interfaces
 
+### InputSystem
+Provides platform-independent input access:
+```cpp
+class InputSystem {
+  virtual Position2D GetMousePosition() const = 0;
+  virtual bool IsKeyPressed(int key) const = 0;
+  virtual bool IsMouseButtonPressed(int button) const = 0;
+  virtual bool IsKeyDown(int key) const = 0;
+  virtual float GetMouseWheelMove() const = 0;
+};
+```
+
+### CollisionSystem
+Provides collision detection:
+```cpp
+class CollisionSystem {
+  virtual bool CheckCollisionPointRec(Position2D point, Rectangle2D rect) const = 0;
+  virtual bool CheckCollisionRecs(Rectangle2D rec1, Rectangle2D rec2) const = 0;
+};
+```
+
+### RenderSystem
+Provides rendering operations:
+```cpp
+class RenderSystem {
+  virtual void BeginDrawing() = 0;
+  virtual void EndDrawing() = 0;
+  virtual void BeginMode2D() = 0;
+  virtual void EndMode2D() = 0;
+  virtual void DrawRectangle(Rectangle2D rect, Color2D color) = 0;
+  virtual Position2D GridToScreen(Position2D pos) = 0;
+  virtual void UpdateGrphCamera(const GrphCamera& camera) = 0;
+  // ... and more
+};
+```
+
+### Graphics Implementation
+`Graphics` class (in `graphics/raylib_graphics.h`) implements all three interfaces:
+```cpp
+class Graphics : public InputSystem,
+                 public CollisionSystem,
+                 public RenderSystem,
+                 public ResourcesSystem {
+  // Implements all interface methods using raylib internally
+};
+```
+
+This allows passing `Graphics` as any of the interfaces to different components.
+
+## Related Documentation
+
+- [Task 02: Memory Management](tasks/task-02-memory-management.md) - ✅ DONE - RAII implementation details
+- [Task 05: Abstract Raylib Dependencies](tasks/task-05-abstract-raylib.md) - ✅ Phase 3 DONE - Interface abstraction
 ## Related Documentation
 
 - [Task 02: Memory Management](tasks/task-02-memory-management.md) - ✅ DONE - RAII implementation details

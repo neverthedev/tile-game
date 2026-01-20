@@ -8,6 +8,6 @@ class WorldTile;
 class TileUpdateComponent: public UpdateComponent {
 public:
   TileUpdateComponent();
-  virtual void Update(GameObject&) override;
+  virtual void Update(GameObject&, CollisionSystem&) override;
   ~TileUpdateComponent() override;
 };

@@ -9,6 +9,6 @@ class GameWorld;
 class WorldInputComponent: public InputComponent {
 public:
   WorldInputComponent();
-  virtual void HandleInput(GameObject&) override;
+  virtual void HandleInput(GameObject&, InputSystem&, CollisionSystem&) override;
   ~WorldInputComponent() override;
 };

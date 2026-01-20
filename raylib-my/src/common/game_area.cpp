@@ -1,6 +1,8 @@
 #include "game_area.h"
 
-#include "../graphics.h"
+#include "../graphics/collision_system.h"
+#include "../graphics/input_system.h"
+#include "../graphics/render_system.h"
 
 GameArea::GameArea(GameObject& obj, Rectangle2D pos, int prt):
     GameObject(),
@@ -16,16 +18,16 @@ GameArea::GameArea(GameArea&& other) noexcept:
     priority { other.priority }
 {}
 
-void GameArea::HandleInput() {
-    object.HandleInput();
+void GameArea::HandleInput(InputSystem& input, CollisionSystem& collision) {
+    object.HandleInput(input, collision);
 }
 
-void GameArea::Update() {
-    object.Update();
+void GameArea::Update(CollisionSystem& collision) {
+    object.Update(collision);
 }
 
-void GameArea::Render(Graphics& grph) {
-    object.Render(grph);
+void GameArea::Render(RenderSystem& renderer) {
+    object.Render(renderer);
 }
 
 GameArea::~GameArea() {}

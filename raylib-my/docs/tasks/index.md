@@ -23,7 +23,7 @@ This document lists all identified improvements for the project architecture.
 |----|------|--------|----------|
 | [TASK-03](task-03-gameobject-interface.md) | Split GameObject interface | ✅ OBSOLETE | 🟡 High |
 | [TASK-04](task-04-component-ownership.md) | Clarify component ownership | ✅ DONE | 🟡 High |
-| [TASK-05](task-05-abstract-raylib.md) | Abstract raylib dependencies | 📋 TODO | 🟡 High |
+| [TASK-05](task-05-abstract-raylib.md) | Abstract raylib dependencies | ✅ DONE | 🟡 High |
 | [TASK-06](task-06-error-handling.md) | Define error handling strategy | 📋 TODO | 🟡 High |
 
 ## Medium Priority 🟢
@@ -45,6 +45,16 @@ This document lists all identified improvements for the project architecture.
 | [TASK-14](task-14-spatial-partitioning.md) | Add spatial partitioning | 📋 TODO | 🔵 Low |
 
 ---
+## TODOs
+1. Reduce RaylibGraphics direct usage, rely on interfaces only
+2. GameInterface doesn't follow game object component pattern
+3. Why game object, empty component, world_component use forward declarations? Why include interfaces
+4. Change "rander" to "rnd" in graphics components
+5. Get close look at worldTileMap in world grapchics component
+6. How did the constants in camera input component survived?
+7. Need to pass Graphics/ResourcesSystem to properly unload textures in tiles_manager
+8.
+
 
 ## Task Status Legend
 - 📋 TODO: Not started
@@ -62,7 +72,7 @@ This document lists all identified improvements for the project architecture.
 2. **Phase 2 - Architecture** (High priority design)
    - ~~TASK-03: Split GameObject interface~~ (Obsolete - component-based architecture already addresses this)
    - ~~TASK-04: Component ownership~~ (Complete - menu ownership fixed)
-   - TASK-05: Abstract raylib
+   - ~~TASK-05: Abstract raylib~~ (Complete - raylib isolated to implementation layer)
 
 3. **Phase 3 - Quality** (Medium priority improvements)
    - TASK-06: Error handling
@@ -92,4 +102,4 @@ To begin working on a task:
 
 ---
 
-Last Updated: January 18, 2026
+Last Updated: January 19, 2026

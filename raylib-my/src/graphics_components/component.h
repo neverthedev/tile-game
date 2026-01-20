@@ -2,11 +2,11 @@
 
 // Forward declarations
 class GameObject;
-class Graphics;
+class RenderSystem;
 
 class GraphicsComponent {
 public:
     GraphicsComponent();
-    virtual void Render(GameObject&, Graphics&) = 0;
+    virtual void Render(GameObject&, RenderSystem&) = 0;
     virtual ~GraphicsComponent();
 };

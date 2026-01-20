@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics.h"
+#include "graphics/raylib_graphics.h"
 #include "common/game_object.h"
 #include "common/position_2d.h"
 #include "common/grph_camera.h"

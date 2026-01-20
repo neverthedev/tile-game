@@ -4,11 +4,11 @@
 
 // Forward declarations
 class GameObject;
-class Graphics;
+class RenderSystem;
 
 class EmptyGraphicsComponent: public GraphicsComponent {
 public:
   EmptyGraphicsComponent();
-  virtual void Render(GameObject&, Graphics&) override;
+  virtual void Render(GameObject&, RenderSystem&) override;
   ~EmptyGraphicsComponent() override;
 };

@@ -1,69 +1,73 @@
 #include "world_component.h"
 
-#include "../common/game_error.h"
 #include "../common/color_2d.h"
-#include "../graphics.h"
+#include "../common/game_error.h"
 #include "../game_world.h"
+#include "../graphics/render_system.h"
 #include "../world_tiles/tile.h"
-#include "raylib.h"  // For raylib-specific functions still needed temporarily
 
 WorldGraphicsComponent::WorldGraphicsComponent():
   GraphicsComponent(),
   initialized { false }
 {}
 
-void WorldGraphicsComponent::drawIsoTileFrame(Graphics& grph, Position2D pos) {
-  Position2D center = grph.GridToScreen(pos);
+void WorldGraphicsComponent::drawIsoTileFrame(RenderSystem& renderer, Position2D pos) {
+  Position2D center = renderer.GridToScreen(pos);
 
-  grph.DrawDiamondFrame(center, Color2D::Magenta(), false, 1.5f);  // MAGENTA
+  renderer.DrawDiamondFrame(center, Color2D::Magenta(), false, 1.5f);  // MAGENTA
 }
 
-void WorldGraphicsComponent::Render(GameObject& wld, Graphics& grph) {
+void WorldGraphicsComponent::Render(GameObject& wld, RenderSystem& renderer) {
   GameWorld* world = dynamic_cast<GameWorld*>(&wld);
   if (!world) throw GameError("Incorrect object type provided!");
 
   if (!world->IsInitialized()) {
-    world->GetCamera().UpdateFromGrphCamera(grph.GetGrphCamera());
-
+    world->GetCamera().UpdateFromGrphCamera(renderer.GetGrphCamera());
     world->SetInitialized();
   }
-  world->GetCamera().Render(grph);
+  world->GetCamera().Render(renderer);
 
-  Position2D gridF = grph.MouseToWorld2D();
+  Position2D gridF = renderer.MouseToWorld2D();
   gridF += { 0.5f, 0.5f };
 
-  ClearBackground(RAYWHITE);
+  renderer.ClearBackground(Color2D(245, 245, 245, 255));  // RAYWHITE
 
-  grph.BeginMode2D();
+  renderer.BeginMode2D();
     if (!initialized) {
-      float width =  0.5 * grph.TileWidth * (world->MapWidth + world->MapHeight);
-      float height = 0.5 * grph.TileHeight * (world->MapWidth + world->MapHeight);
+      float tileWidth = renderer.GetTileWidth();
+      float tileHeight = renderer.GetTileHeight();
+      float width =  0.5 * tileWidth * (world->MapWidth + world->MapHeight);
+      float height = 0.5 * tileHeight * (world->MapWidth + world->MapHeight);
 
-      worldTileMap = GenImageColor(width, height, BLANK);
+      worldTileMap = renderer.GenImageColor(width, height, Color2D(0, 0, 0, 0));
       initialized = true;
     }
 
     bool redraw = false;
-    grph.Dst = &worldTileMap;
-    grph.Correction = Position2D(world->MapHeight * grph.TileWidth / 2.0f, 0.0f);
+    float tileWidth = renderer.GetTileWidth();
+    renderer.SetDst(worldTileMap);
+    renderer.SetCorrection(Position2D(world->MapHeight * tileWidth / 2.0f, 0.0f));
 
     for(int i = 0; i < world->MapHeight * world->MapWidth; ++i) {
       WorldTile& tile = world->GetTile(i);
       if (tile.Dirty) {
-        tile.Render(grph);
+        tile.Render(renderer);
         redraw |= true;
       }
     }
 
     if (redraw) {
-      mapTexture = LoadTextureFromImage(worldTileMap);
-    } else {
+      if (mapTexture.IsValid()) {
+        renderer.UnloadTexture(mapTexture);
+      }
+      mapTexture = renderer.LoadTextureFromImage(worldTileMap);
     }
 
-  DrawTexture(mapTexture, -grph.Correction.x, -grph.Correction.y, WHITE);
-  drawIsoTileFrame(grph, gridF);
-  grph.EndMode2D();
-  DrawFPS(10, 10);
+  Position2D correction = renderer.GetCorrection();
+  renderer.DrawTexture(mapTexture, Position2D(-correction.x, -correction.y), Color2D(255, 255, 255, 255));  // WHITE
+  drawIsoTileFrame(renderer, gridF);
+  renderer.EndMode2D();
+  renderer.DrawFPS(10, 10);
 }
 
 WorldGraphicsComponent::~WorldGraphicsComponent() {}

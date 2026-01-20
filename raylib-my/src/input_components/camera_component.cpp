@@ -1,29 +1,29 @@
 #include "camera_component.h"
 
 #include "../game_camera.h"
-#include "raylib.h"
+#include "../graphics/input_system.h"
+#include "../graphics/collision_system.h"
 #include "raymath.h"
 
 CameraInputComponent::CameraInputComponent(): InputComponent() {}
 
-void CameraInputComponent::HandleInput(GameObject &cam) {
+void CameraInputComponent::HandleInput(GameObject &cam, InputSystem& input, CollisionSystem& collision) {
   GameCamera* camera = dynamic_cast<GameCamera*>(&cam);
 
   if (!camera) throw GameError("Incorrect object type provided!");
 
-  if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))
+  if (input.IsKeyDown(KEY_RIGHT) || input.IsKeyDown(KEY_D))
     camera->target.x += camera->MOVE_SPEED;
-  if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
+  if (input.IsKeyDown(KEY_LEFT) || input.IsKeyDown(KEY_A))
     camera->target.x -= camera->MOVE_SPEED;
-  if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S))
+  if (input.IsKeyDown(KEY_DOWN) || input.IsKeyDown(KEY_S))
     camera->target.y += camera->MOVE_SPEED;
-  if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W))
+  if (input.IsKeyDown(KEY_UP) || input.IsKeyDown(KEY_W))
     camera->target.y -= camera->MOVE_SPEED;
 
-  // TODO: Separate it out to the InputAdapter for raylib
-  Position2D mousePos = GetMousePosition();
+  Position2D mousePos = input.GetMousePosition();
   Vector2 mouse = Vector2{mousePos.x, mousePos.y};
-  float wheel = GetMouseWheelMove();
+  float wheel = input.GetMouseWheelMove();
 
   if (wheel != 0.0f) {
     // Convert camera to raylib Camera2D for GetScreenToWorld2D

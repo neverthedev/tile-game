@@ -10,6 +10,6 @@ class GameCamera;
 class CameraInputComponent: public InputComponent {
 public:
   CameraInputComponent();
-  virtual void HandleInput(GameObject&) override;
+  virtual void HandleInput(GameObject&, InputSystem&, CollisionSystem&) override;
   ~CameraInputComponent() override;
 };

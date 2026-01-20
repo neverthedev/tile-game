@@ -19,11 +19,11 @@ WorldTile::WorldTile(
   MowementSpeed { 0 }
 {}
 
-const Texture2D& WorldTile::Texture() const {
+TextureHandle WorldTile::Texture() const {
   return TerrainType.Texture();
 }
 
-const Image& WorldTile::TextureImage() const {
+ImageHandle WorldTile::TextureImage() const {
   return TerrainType.TextureImage();
 }
 

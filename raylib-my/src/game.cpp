@@ -3,7 +3,7 @@
 
 #include "common/game_error.h"
 #include "menus/factory.h"
-#include "graphics.h"
+#include "graphics/raylib_graphics.h"
 #include "game_interface.h"
 #include "services/service_locator.h"
 
@@ -17,7 +17,7 @@ const int FRAME_RATE = 60;
 
 int main(void) {
   ServiceLocator::Initialize();
-  Graphics graphics { SCREEN_W, SCREEN_H, TILE_W, TILE_H, "IsoGame Test", FRAME_RATE };
+  RaylibGraphics graphics { SCREEN_W, SCREEN_H, TILE_W, TILE_H, "IsoGame Test", FRAME_RATE };
   GameInterface interface { SCREEN_W, SCREEN_H };
 
   graphics.InitScreen();
@@ -25,8 +25,8 @@ int main(void) {
   ServiceLocator::LoadResources(graphics);
 
   while (!graphics.Done()) {
-    interface.HandleInput();
-    interface.Update();
+    interface.HandleInput(graphics, graphics);
+    interface.Update(graphics);
     graphics.BeginDrawing();
       interface.Render(graphics);
     graphics.EndDrawing();

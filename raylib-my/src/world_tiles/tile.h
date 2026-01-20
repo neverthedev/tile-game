@@ -1,9 +1,8 @@
 #pragma once
 
-#include "raylib.h"  // Include first to avoid conflicts with forward declarations
 #include "../common/position_2d.h"
 #include "../common/game_object.h"
-#include "../graphics.h"
+#include "../graphics/raylib_graphics.h"
 #include "tile_terrain_type.h"
 #include "decorations/decoration.h"
 #include "resources/resource.h"
@@ -19,8 +18,8 @@ public:
   int MowementSpeed;
 
   virtual ~WorldTile();
-  const Texture2D& Texture() const;
-  const Image& TextureImage() const;
+  TextureHandle Texture() const;
+  ImageHandle TextureImage() const;
 
 private:
   WorldTile(

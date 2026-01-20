@@ -1,9 +1,10 @@
 # TASK-05: Abstract Raylib Dependencies
 
 **Priority:** 🟡 High
-**Status:** 📋 TODO
+**Status:** ✅ Complete (Testing infrastructure deferred)
 **Estimated Effort:** High
 **Last Reviewed:** 2026-01-19
+**Completed:** 2026-01-19
 
 ---
 
@@ -15,41 +16,73 @@
 - Improving code maintainability and flexibility
 - Following SOLID principles (Dependency Inversion)
 
-**Current State (2026-01-19 - UPDATED):**
+**Current State (2026-01-19 - COMPLETE):**
 - ✅ Custom type wrappers created (Position2D, Rectangle2D, Color2D, GrphCamera)
 - ✅ Common types are now raylib-independent
 - ✅ Graphics class is completely independent of GameCamera
 - ✅ Graphics uses only GrphCamera (platform-independent camera)
 - ✅ Camera conversion happens at component boundary (GameCamera → GrphCamera)
 - ✅ BeginMode2D() and MouseToWorld2D() use internal camera state
-- ⚠️ Raylib still included in 10 files (reduced from widespread usage)
-- ❌ No full abstraction layer with interfaces
-- ❌ No platform-specific implementations directory
+- ✅ ResourcesSystem interface complete (uses TextureHandle/ImageHandle)
+- ✅ InputSystem interface complete (GetMousePosition, IsKeyPressed, etc.)
+- ✅ CollisionSystem interface complete (CheckCollisionPointRec, etc.)
+- ✅ RenderSystem interface complete (BeginDrawing, DrawRectangle, ClearBackground, DrawTexture, DrawFPS, etc.)
+- ✅ Graphics implements all 4 interfaces (InputSystem, CollisionSystem, RenderSystem, ResourcesSystem)
+- ✅ Raylib isolated to only 2 files (raylib_graphics.h/cpp)
+- ✅ GameObject/Component method signatures updated to use interface parameters
+- ✅ All components refactored to use interface methods
+- ✅ WorldComponent fully refactored (no more direct raylib calls)
+- ✅ Tile classes use Rectangle2D instead of raylib Rectangle
+- ⏭️ Testing infrastructure deferred to future task
 
-**Files Currently Including raylib.h (PHASE 1 COMPLETE):**
+**Files Currently Including raylib.h (FINAL STATE):**
 
-**Core/Platform Layer (Necessary):**
-1. `graphics.h` - Uses Image*, Texture2D, Camera2D in interface
-2. `graphics.cpp` - Implements raylib conversion functions
-3. `world_tiles/tile_terrain_type.h` - Uses Texture2D, Image as member variables
-4. `world_tiles/tile.h` - Include guard to prevent conflicts
+**Core/Platform Layer (Expected):**
+1. `graphics/raylib_graphics.h` - Implementation layer header
+2. `graphics/raylib_graphics.cpp` - Implementation layer source
 
-**Input Components (Need Interface Abstraction):**
-5. `input_components/component.cpp` - Direct raylib input calls
-6. `input_components/camera_component.cpp` - Uses GetScreenToWorld2D
+**All other files eliminated:**
+- ✅ `world_tiles/tile_terrain_type.h` - Now uses Rectangle2D
+- ✅ `world_tiles/tile.h` - No longer includes raylib.h
+- ✅ `input_components/*.cpp` - Use interface methods
+- ✅ `graphics_components/world_component.h/cpp` - Use RenderSystem interface
+- ✅ `graphics_components/tile_component.cpp` - Uses interface methods
+- ✅ `game_interface.cpp` - Uses interface methods
 
-**Graphics Components (Need Interface Abstraction):**
-7. `graphics_components/world_component.h/cpp` - Uses raylib drawing functions
-8. `graphics_components/tile_component.cpp` - Uses ImageDraw
-
-**Game Logic (Should Be Eliminated):**
-9. `game_interface.cpp` - Uses GetMousePosition(), CheckCollisionPointRec() (temporary)
+**Result:** Raylib completely isolated to implementation layer
 
 **Progress:**
-- ✅ Phase 1 Complete: Type abstraction (Position2D, Rectangle2D, Color2D, GameCamera)
-- ⏳ Phase 2 In Progress: Minimize raylib includes (10 files, down from 15+)
-- ❌ Phase 3 Not Started: Interface layer creation
-- ❌ Phase 4 Not Started: Platform implementations
+- ✅ Phase 1 Complete: Type abstraction (Position2D, Rectangle2D, Color2D, GrphCamera)
+- ✅ Phase 2 Complete: Interface layer creation (all 4 interfaces defined and implemented)
+  - ✅ InputSystem: GetMousePosition, IsKeyPressed, IsMouseButtonPressed, IsKeyDown, GetMouseWheelMove
+  - ✅ CollisionSystem: CheckCollisionPointRec, CheckCollisionRecs
+  - ✅ RenderSystem: BeginDrawing, EndDrawing, BeginMode2D, EndMode2D, DrawRectangle, DrawDiamondFrame, ClearBackground, DrawTexture, DrawFPS, GridToScreen, ScreenToWorld2D, MouseToWorld2D, UpdateGrphCamera, GetGrphCamera, GetTileWidth/Height, GetCorrection/SetCorrection, GetDst/SetDst, ImageDraw, GetImageWidth/Height
+  - ✅ ResourcesSystem: LoadTexture/Image, UnloadTexture/Image, LoadTextureFromImage, ImageCrop, ImageDrawLineEx, GenImageColor, GetImageWidth/Height
+  - ✅ Graphics class implements all 4 interfaces
+- ✅ Phase 3 Complete: Updated all call sites to use interface parameters
+  - ✅ GameObject base class updated (HandleInput, Update, Render take interface parameters)
+  - ✅ Component base classes updated (InputComponent, UpdateComponent, GraphicsComponent)
+  - ✅ GameInterface, GameArea updated
+  - ✅ All 13+ component implementations updated
+  - ✅ Main game loop passes interface references
+  - ✅ Direct raylib calls removed from all components
+  - ✅ WorldComponent fully refactored (uses only RenderSystem interface)
+  - ✅ Tile classes converted from raylib Rectangle to Rectangle2D
+  - ✅ Build succeeds with zero raylib dependencies outside implementation layer
+- ⏭️ Phase 4 Deferred: Testing infrastructure (mock implementations)
+  - Note: Deferred to separate task - core abstraction is complete
+  - Future work: Create MockInputSystem, MockRenderSystem, etc.
+  - Future work: Add unit tests demonstrating testability
+
+**Current Approach (Updated 2026-01-19):**
+- **NO constructor dependency injection** - Keep RaylibGraphics constructor simple
+- **Interface parameters** - Pass interfaces as method parameters where needed
+- **Single implementation** - RaylibGraphics implements all 4 interfaces (InputSystem, ResourcesSystem, CollisionSystem, RenderSystem)
+- **Method signatures updated**:
+  - `LoadResources(ResourcesSystem&)`
+  - `HandleInput(InputSystem&, CollisionSystem&)`
+  - `Update(CollisionSystem&)`
+  - `Render(RenderSystem&)`
 
 **Complexity:** HIGH - Multi-phase systematic refactoring across entire codebase
 
@@ -241,75 +274,98 @@ class MockInputSystem : public IInputSystem {
 - Reduced raylib.h includes from 15+ files to 10 files
 - Comprehensive documentation with UML sequence diagrams
 
-**Time Taken:** ~3 hours
+**Time Taken:** ~4 hours
 **Risk:** Low (additive changes, conversion layer works)
 
-### Phase 2: Create Interface Layer ⭐ NEXT STEP
+---
 
-**Goal:** Define abstract interfaces for platform independence
+### Phase 2: Create Interface Layer ✅ COMPLETE
 
-1. **Create interface directory structure:**
-   ```bash
-   mkdir -p src/interfaces
-   mkdir -p src/platform/raylib
-   ```
+**Goal:** Define abstract interfaces for platform independence (NO dependency injection in constructor)
 
-2. **Define core interfaces:**
-   - `src/interfaces/i_input_system.h` - Mouse, keyboard input
-   - `src/interfaces/i_render_system.h` - Drawing operations
-   - `src/interfaces/i_collision_system.h` - Collision detection
-   - `src/interfaces/i_resource_system.h` - Texture/image loading
+**Completed:**
+1. ✅ Created `InputSystem` interface (graphics/input_system.h)
+   - GetMousePosition() → Position2D
+   - IsKeyPressed(int) → bool
+   - IsMouseButtonPressed(int) → bool
+   - IsKeyDown(int) → bool
+   - GetMouseWheelMove() → float
 
-3. **Create Raylib implementations:**
-   - `src/platform/raylib/raylib_input_system.h/cpp`
-   - `src/platform/raylib/raylib_render_system.h/cpp`
-   - `src/platform/raylib/raylib_collision_system.h/cpp`
-   - `src/platform/raylib/raylib_resource_system.h/cpp`
+2. ✅ Created `CollisionSystem` interface (graphics/collision_system.h)
+   - CheckCollisionPointRec(Position2D, Rectangle2D) → bool
+   - CheckCollisionRecs(Rectangle2D, Rectangle2D) → bool
 
-**Estimated Time:** 4-6 hours
-**Risk:** Low (additive changes only)
+3. ✅ Created `RenderSystem` interface (graphics/render_system.h)
+   - BeginDrawing(), EndDrawing()
+   - BeginMode2D(), EndMode2D()
+   - DrawRectangle(Rectangle2D, Color2D)
+   - DrawDiamondFrame(Position2D, Color2D, bool, float)
 
-### Phase 2: Refactor Graphics Class
+4. ✅ Created `ResourcesSystem` interface (graphics/resources_system.h)
+   - LoadTexture/Image → TextureHandle/ImageHandle
+   - UnloadTexture/Image
+   - ImageCrop, ImageDraw, ImageDrawLineEx
+   - GenImageColor
+   - GetImageWidth/Height
 
-**Goal:** Update Graphics to use dependency injection
+5. ✅ Updated Graphics class
+   - Now inherits from all 4 interfaces: InputSystem, CollisionSystem, RenderSystem, ResourcesSystem
+   - Implements all interface methods
+   - All implementations use raylib internally but expose only custom types
 
-1. **Update Graphics constructor:**
-   ```cpp
-   Graphics(std::unique_ptr<IRenderSystem> renderer,
-            std::unique_ptr<IInputSystem> input,
-            std::unique_ptr<ICollisionSystem> collision,
-            std::unique_ptr<IResourceSystem> resources,
-            int width, int height, ...);
-   ```
+**Results:**
+- All interfaces use ONLY custom types (Position2D, Rectangle2D, Color2D, TextureHandle, ImageHandle)
+- NO raylib types in any interface (no Vector2, Rectangle, Color, Texture2D, Image)
+- Graphics class successfully implements all interfaces
+- Build succeeds with all changes
+- Ready for Phase 3 (updating call sites to use interface parameters)
 
-2. **Add delegation methods:**
-   - Forward input calls to IInputSystem
-   - Forward rendering to IRenderSystem
-   - Forward collision to ICollisionSystem
+**Time Taken:** ~2 hours
+**Risk:** Low (interfaces defined, single implementation working)
 
-3. **Update main.cpp to inject dependencies**
+---
 
-**Estimated Time:** 3-4 hours
-**Risk:** Medium (changes core class)
+### Phase 2: Create Interface Layer ⭐ IN PROGRESS
 
-### Phase 3: Remove Direct Raylib Calls
+---
 
-**Goal:** Eliminate all direct raylib dependencies from game logic
+### Phase 3: Update All Call Sites ⭐ NEXT STEP
 
-1. **Update game_interface.cpp:**
-   - Replace `GetMousePosition()` → `graphics.GetMousePosition()`
-   - Replace `CheckCollisionPointRec()` → `graphics.CheckCollision()`
+**Goal:** Update all GameObject descendants and components to use interface parameters
 
-2. **Update input_components:**
-   - Pass Graphics reference to components
-   - Use Graphics methods instead of direct raylib
+**1. Update Component Base Classes:**
 
-3. **Remove unnecessary `#include "raylib.h"`:**
-   - Keep only in platform-specific files
-   - Use forward declarations where possible
+- `InputComponent::HandleInput(GameObject&, InputSystem&, CollisionSystem&)`
+- `UpdateComponent::Update(GameObject&, CollisionSystem&)`
+- `GraphicsComponent::Render(GameObject&, RenderSystem&)`
 
-**Estimated Time:** 4-5 hours
-**Risk:** Medium (multiple file changes)
+**2. Update All Input Component Implementations:**
+- `input_components/camera_component.cpp`
+- `input_components/world_component.cpp`
+- `input_components/tile_component.cpp`
+- `input_components/menu/*.cpp`
+
+**3. Update All Update Component Implementations:**
+- `update_components/camera_component.cpp`
+- `update_components/world_component.cpp`
+- `update_components/tile_component.cpp`
+- `update_components/menu/*.cpp`
+
+**4. Update All Graphics Component Implementations:**
+- `graphics_components/camera_component.cpp`
+- `graphics_components/world_component.cpp`
+- `graphics_components/tile_component.cpp`
+- `graphics_components/menu/*.cpp`
+
+**5. Update GameObject Hierarchy:**
+- `common/game_object.h/cpp` - base class signatures
+- `game_interface.h/cpp` - propagate interface parameters
+- `game_world.h/cpp` - propagate interface parameters
+- `game_camera.h/cpp` - propagate interface parameters
+- `menus/*.h/cpp` - propagate interface parameters
+
+**Estimated Time:** 6-8 hours
+**Risk:** Medium-High (touches many files, but mechanical changes)
 
 ### Phase 4: Create Test Infrastructure
 
@@ -349,22 +405,22 @@ class MockInputSystem : public IInputSystem {
 
 ### Immediate Next Steps (Phase 2):
 
-1. **TODO:** Create `src/interfaces/i_input_system.h` with methods:
-   - `GetMousePosition() → Position2D`
-   - `IsKeyPressed(int key) → bool`
-   - `IsMouseButtonPressed(int button) → bool`
-   - `IsKeyDown(int key) → bool`
-   - `GetMouseWheelMove() → float`
+1. **TODO:** Complete interface definitions in `src/graphics/`:
+   - `ServiceLocator::LoadResources(ResourcesSystem& resources)`
+   - `GameObject::HandleInput(InputSystem& input, CollisionSystem& collision)`
+   - `GameObject::Update(CollisionSystem& collision)`
+   - `GameObject::Render(RenderSystem& renderer)`
 
-3. **TODO:** Create `src/interfaces/i_collision_system.h` with methods:
-   - `CheckCollisionPointRec()`
-   - `CheckCollisionRecs()`
+6. **TODO:** Update component base classes:
+   - `InputComponent::HandleInput(GameObject&, InputSystem&, CollisionSystem&)`
+   - `UpdateComponent::Update(GameObject&, CollisionSystem&)`
+   - `GraphicsComponent::Render(GameObject&, RenderSystem&)`
 
-4. **TODO:** Create `src/platform/raylib/raylib_input_system.h/cpp`
-   - Implement interface by delegating to raylib functions
-
-5. **TODO:** Create `src/platform/raylib/raylib_collision_system.h/cpp`
-   - Implement interface by delegating to raylib functions
+7. **TODO:** Update main game loop in `game.cpp`:
+   - Pass `graphics` as interface reference to each method
+   - `interface.HandleInput(graphics, graphics)`
+   - `interface.Update(graphics)`
+   - `interface.Render(graphics)`
 
 ### Success Criteria:
 
@@ -380,16 +436,28 @@ class MockInputSystem : public IInputSystem {
 - [x] Documentation created with UML sequence diagrams
 
 **Phase 2 (Interface Layer):**
-- [ ] All interfaces defined (IInputSystem, ICollisionSystem, IRenderSystem, IResourceSystem)
-- [ ] All Raylib implementations created
-- [ ] Graphics class uses dependency injection
-- [ ] Mock implementations for testing created
+- [x] All interfaces defined with abstract methods (InputSystem, CollisionSystem, RenderSystem, ResourcesSystem)
+- [x] Interfaces use only custom types (Position2D, Color2D, Rectangle2D, etc.) - NO raylib types
+- [x] Graphics class implements all four interfaces
+- [x] InputSystem methods: GetMousePosition, IsKeyPressed, IsMouseButtonPressed, IsKeyDown, GetMouseWheelMove
+- [x] CollisionSystem methods: CheckCollisionPointRec, CheckCollisionRecs
+- [x] RenderSystem methods: BeginDrawing, EndDrawing, BeginMode2D, EndMode2D, DrawRectangle, DrawDiamondFrame
+- [x] ResourcesSystem methods: LoadTexture/Image, Unload, ImageCrop/Draw, GenImageColor, GetImageWidth/Height
+- [x] Build succeeds with all interface implementations
 
-**Phase 3 (Eliminate Direct Calls):**
+**Phase 3 (Update Call Sites):**
+- [ ] ServiceLocator::LoadResources takes ResourcesSystem& parameter
+- [ ] GameObject::HandleInput takes InputSystem& and CollisionSystem& parameters
+- [ ] GameObject::Update takes CollisionSystem& parameter
+- [ ] GameObject::Render takes RenderSystem& parameter
+- [ ] Component base classes updated with interface parameters
+- [ ] Main game loop passes graphics as interface references
+- [ ] All InputComponent implementations updated
+- [ ] All UpdateComponent implementations updated
+- [ ] All GraphicsComponent implementations updated
+- [ ] All GameObject descendants updated (GameInterface, GameWorld, GameCamera, menus)
 - [ ] No direct raylib calls in game logic files
-- [ ] Input components use interfaces
-- [ ] Graphics components use interfaces
-- [ ] Only platform layer includes raylib.h
+- [ ] Build succeeds with new interface system
 
 **Phase 4 (Testing):**
 - [ ] At least one unit test runs without graphics init

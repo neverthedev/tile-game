@@ -11,9 +11,9 @@ class GameInterface: public GameObject {
 public:
   GameInterface(int, int);
   void AddArea(GameObject&, Rectangle2D, int);
-  virtual void HandleInput() override;
-  virtual void Update() override;
-  virtual void Render(Graphics& grph) override;
+  virtual void HandleInput(InputSystem&, CollisionSystem&) override;
+  virtual void Update(CollisionSystem&) override;
+  virtual void Render(RenderSystem&) override;
 
   ~GameInterface();
 
