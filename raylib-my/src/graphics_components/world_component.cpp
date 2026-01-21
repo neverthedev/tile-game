@@ -21,10 +21,19 @@ void WorldGraphicsComponent::Render(GameObject& wld, RenderSystem& renderer) {
   GameWorld* world = dynamic_cast<GameWorld*>(&wld);
   if (!world) throw GameError("Incorrect object type provided!");
 
-  if (!world->IsInitialized()) {
+  if (!initialized) {
     world->GetCamera().UpdateFromGrphCamera(renderer.GetGrphCamera());
-    world->SetInitialized();
+
+    float tileWidth = renderer.GetTileWidth();
+    float tileHeight = renderer.GetTileHeight();
+    float width =  0.5 * tileWidth * (world->MapWidth + world->MapHeight);
+    float height = 0.5 * tileHeight * (world->MapWidth + world->MapHeight);
+
+    worldTileMap = renderer.GenImageColor(width, height, Color2D(0, 0, 0, 0));
+
+    initialized = true;
   }
+
   world->GetCamera().Render(renderer);
 
   Position2D gridF = renderer.MouseToWorld2D();
@@ -33,16 +42,6 @@ void WorldGraphicsComponent::Render(GameObject& wld, RenderSystem& renderer) {
   renderer.ClearBackground(Color2D(245, 245, 245, 255));  // RAYWHITE
 
   renderer.BeginMode2D();
-    if (!initialized) {
-      float tileWidth = renderer.GetTileWidth();
-      float tileHeight = renderer.GetTileHeight();
-      float width =  0.5 * tileWidth * (world->MapWidth + world->MapHeight);
-      float height = 0.5 * tileHeight * (world->MapWidth + world->MapHeight);
-
-      worldTileMap = renderer.GenImageColor(width, height, Color2D(0, 0, 0, 0));
-      initialized = true;
-    }
-
     bool redraw = false;
     float tileWidth = renderer.GetTileWidth();
     renderer.SetDst(worldTileMap);

@@ -18,7 +18,6 @@ GameWorld::GameWorld(
   GameObject(std::move(inp), std::move(rnd), std::move(upd)),
   MapWidth { w },
   MapHeight { h },
-  initialized { false },
   grid { }
 {
   camera = std::make_unique<GameCamera>(
@@ -63,14 +62,6 @@ WorldTile& GameWorld::GetTile(int index) {
 
 GameCamera& GameWorld::GetCamera() {
   return *camera;
-}
-
-bool GameWorld::IsInitialized() const {
-  return initialized;
-}
-
-void GameWorld::SetInitialized() {
-  initialized = true;
 }
 
 GameWorld::~GameWorld() = default;

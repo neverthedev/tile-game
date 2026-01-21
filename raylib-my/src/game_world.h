@@ -23,15 +23,11 @@ public:
   WorldTile& operator[](Position2D);
   WorldTile& GetTile(int index);
   GameCamera& GetCamera();
-  bool IsInitialized() const;
-  void SetInitialized();
   ~GameWorld();
 
 private:
   std::unique_ptr<GameCamera> camera;
-  bool initialized;
   std::vector<std::unique_ptr<WorldTile>> grid;
 
   void initializeGrid();
-  void initializeTyleTypes();
 };

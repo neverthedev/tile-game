@@ -30,8 +30,7 @@ This document lists all identified improvements for the project architecture.
 
 | ID | Task | Status | Priority |
 |----|------|--------|----------|
-| [TASK-07](task-07-tilesmanager-pattern.md) | Improve TilesManager pattern | 📋 TODO | 🟢 Medium |
-| [TASK-08](task-08-state-separation.md) | Separate game state from view state | 📋 TODO | 🟢 Medium |
+| [TASK-07](task-07-tilesmanager-pattern.md) | Improve TilesManager pattern | ✅ DONE | 🟢 Medium |
 | [TASK-09](task-09-configuration.md) | Extract hard-coded dependencies | 📋 TODO | 🟢 Medium |
 | [TASK-10](task-10-input-consumption.md) | Improve input handling pattern | 📋 TODO | 🟢 Medium |
 | [TASK-11](task-11-abstraction-layers.md) | Add missing abstraction layers | 📋 TODO | 🟢 Medium |
@@ -41,6 +40,7 @@ This document lists all identified improvements for the project architecture.
 
 | ID | Task | Status | Priority |
 |----|------|--------|----------|
+| [TASK-08](task-08-state-separation.md) | Move initialization flag to graphics component | ✅ DONE | 🔵 Low |
 | [TASK-13](task-13-sorting-optimization.md) | Optimize gameAreas sorting | 📋 TODO | 🔵 Low |
 | [TASK-14](task-14-spatial-partitioning.md) | Add spatial partitioning | 📋 TODO | 🔵 Low |
 
@@ -73,16 +73,15 @@ This document lists all identified improvements for the project architecture.
 
 3. **Phase 3 - Quality** (Medium priority improvements)
    - TASK-06: Error handling
-   - TASK-08: State separation
    - TASK-09: Configuration
    - TASK-11: Abstraction layers
 
 4. **Phase 4 - Extensibility** (Medium-Low priority)
-   - TASK-07: TilesManager pattern
    - TASK-10: Input consumption
    - TASK-12: Extensibility
 
-5. **Phase 5 - Optimization** (Low priority)
+5. **Phase 5 - Optimization & Cleanup** (Low priority)
+   - TASK-08: Move initialization flag to component (trivial cleanup)
    - TASK-13: Sorting optimization
    - TASK-14: Spatial partitioning
 
@@ -99,4 +98,4 @@ To begin working on a task:
 
 ---
 
-Last Updated: January 19, 2026
+Last Updated: January 21, 2026
