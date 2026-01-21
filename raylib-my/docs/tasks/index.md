@@ -31,7 +31,7 @@ This document lists all identified improvements for the project architecture.
 | ID | Task | Status | Priority |
 |----|------|--------|----------|
 | [TASK-07](task-07-tilesmanager-pattern.md) | Improve TilesManager pattern | ✅ DONE | 🟢 Medium |
-| [TASK-09](task-09-configuration.md) | Extract hard-coded dependencies | 📋 TODO | 🟢 Medium |
+| [TASK-09](task-09-configuration.md) | Extract hard-coded dependencies | ✅ DONE | 🟢 Medium |
 | [TASK-10](task-10-input-consumption.md) | Improve input handling pattern | 📋 TODO | 🟢 Medium |
 | [TASK-11](task-11-abstraction-layers.md) | Add missing abstraction layers | 📋 TODO | 🟢 Medium |
 | [TASK-12](task-12-extensibility.md) | Improve extensibility | 📋 TODO | 🟢 Medium |

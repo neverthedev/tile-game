@@ -3,6 +3,7 @@
 #include "services/service_locator.h"
 #include "common/position_2d.h"
 #include "common/rectangle_2d.h"
+#include "config/game_config.h"
 #include "graphics/collision_system.h"
 #include "graphics/input_system.h"
 #include "graphics/render_system.h"
@@ -11,7 +12,10 @@
 GameInterface::GameInterface(int w, int h):
   screenWidth { w },
   screenHeight { h },
-  gameWorld { GameWorld::NewWorld(60, 80) }
+  gameWorld { GameWorld::NewWorld(
+    ServiceLocator::GetConfig().WorldWidth,
+    ServiceLocator::GetConfig().WorldHeight
+  ) }
 {
   currentMenu = MenuFactory::CreateDecorationMenu({
     float(screenWidth) - 160, 0, 160.0, float(screenHeight)
