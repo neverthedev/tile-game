@@ -13,8 +13,9 @@ GameInterface::GameInterface(int w, int h):
   screenHeight { h },
   gameWorld { GameWorld::NewWorld(60, 80) }
 {
+  float menuWidth = 210.0f;
   currentMenu = MenuFactory::CreateDecorationMenu({
-    float(screenWidth) - 160, 0, 160.0, float(screenHeight)
+    float(screenWidth) - menuWidth, 0, menuWidth, float(screenHeight)
   });
 
   AddArea(gameWorld, { 0, 0, float(screenWidth), float(screenHeight) }, 0);

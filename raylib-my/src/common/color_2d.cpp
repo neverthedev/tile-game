@@ -53,3 +53,23 @@ Color2D Color2D::LightGray() {
 Color2D Color2D::Magenta() {
   return Color2D(255, 0, 255, 255);
 }
+
+Color2D Color2D::MenuBackground() {
+  return Color2D(245, 245, 245, 255);
+}
+
+Color2D Color2D::MenuRowBackground() {
+  return Color2D(232, 232, 232, 255);
+}
+
+Color2D Color2D::MenuRowSelected() {
+  return Color2D(200, 225, 245, 255);
+}
+
+Color2D Color2D::MenuRowHoverBorder() {
+  return Color2D(120, 120, 120, 255);
+}
+
+Color2D Color2D::MenuText() {
+  return Color2D(25, 25, 25, 255);
+}

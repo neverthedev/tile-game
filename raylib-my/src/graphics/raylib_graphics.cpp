@@ -107,11 +107,20 @@ void RaylibGraphics::ClearBackground(Color2D color) {
   ::ClearBackground(raylibColor);
 }
 
-void RaylibGraphics::DrawTexture(TextureHandle textureHandle, Position2D position, Color2D tint) {
+void RaylibGraphics::DrawTexture(TextureHandle textureHandle, Position2D position, Color2D tint, float scale) {
   if (!textureHandle.IsValid()) return;
-    const Texture2D& tex = impl->textures.at(textureHandle.GetId());
+  const Texture2D& tex = impl->textures.at(textureHandle.GetId());
   Color raylibTint = ToRaylibColor(tint);
-  ::DrawTexture(tex, (int)position.x, (int)position.y, raylibTint);
+  if (scale == 1.0f) {
+    ::DrawTexture(tex, (int)position.x, (int)position.y, raylibTint);
+  } else {
+    ::DrawTextureEx(tex, ToRaylibVector2(position), 0.0f, scale, raylibTint);
+  }
+}
+
+void RaylibGraphics::DrawText(const char* text, Position2D position, int fontSize, Color2D color) {
+  Color raylibColor = ToRaylibColor(color);
+  ::DrawText(text, (int)position.x, (int)position.y, fontSize, raylibColor);
 }
 
 void RaylibGraphics::DrawFPS(int x, int y) {

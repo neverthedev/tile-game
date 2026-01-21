@@ -21,4 +21,9 @@ public:
     static Color2D DarkGray();
     static Color2D LightGray();
     static Color2D Magenta();
+    static Color2D MenuBackground();
+    static Color2D MenuRowBackground();
+    static Color2D MenuRowSelected();
+    static Color2D MenuRowHoverBorder();
+    static Color2D MenuText();
 };
