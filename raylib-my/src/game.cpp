@@ -1,25 +1,34 @@
 #include <cmath>
+#include <exception>
 #include <iostream>
 
 #include "common/game_error.h"
+#include "config/game_config.h"
 #include "menus/factory.h"
 #include "graphics/raylib_graphics.h"
 #include "graphics/resources_system.h"
 #include "game_interface.h"
 #include "services/service_locator.h"
 
-const float TILE_W = 64.0f;
-const float TILE_H = 32.0f;
-
-const int SCREEN_W = 1024;
-const int SCREEN_H = 768;
-
-const int FRAME_RATE = 60;
-
 int main(void) {
-  ServiceLocator::Initialize();
-  RaylibGraphics graphics { SCREEN_W, SCREEN_H, TILE_W, TILE_H, "IsoGame Test", FRAME_RATE };
-  GameInterface interface { SCREEN_W, SCREEN_H };
+  GameConfig config;
+  try {
+    config = GameConfig::LoadFromFile("config/config.json");
+  } catch (const std::exception& ex) {
+    std::cerr << "Failed to load config: " << ex.what() << std::endl;
+    return 1;
+  }
+
+  ServiceLocator::Initialize(config);
+  RaylibGraphics graphics {
+    config.ScreenWidth,
+    config.ScreenHeight,
+    config.TileWidth,
+    config.TileHeight,
+    config.WindowTitle,
+    config.FrameRate
+  };
+  GameInterface interface { config.ScreenWidth, config.ScreenHeight };
 
   graphics.InitScreen();
 

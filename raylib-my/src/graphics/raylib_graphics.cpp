@@ -31,7 +31,7 @@ static Rectangle ToRaylibRectangle(const Rectangle2D& rect) {
   return Rectangle { rect.x, rect.y, rect.width, rect.height };
 }
 
-RaylibGraphics::RaylibGraphics(int s_w, int s_h, float t_w, float t_h, const char *t, int fr):
+RaylibGraphics::RaylibGraphics(int s_w, int s_h, float t_w, float t_h, const std::string t, int fr):
   ScreenWidth { s_w },
   ScreenHeight { s_h },
   TileWidth { t_w },
@@ -56,7 +56,7 @@ void* RaylibGraphics::ConvertToRaylibCamera() {
 }
 
 void RaylibGraphics::InitScreen() {
-  InitWindow(ScreenWidth, ScreenHeight, Title);
+  InitWindow(ScreenWidth, ScreenHeight, Title.c_str());
   SetTargetFPS(TargetFrameRate);
   Initialized = true;
 }

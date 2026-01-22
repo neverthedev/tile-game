@@ -1,0 +1,19 @@
+{
+  "display": {
+    "screenWidth": 1024,
+    "screenHeight": 768,
+    "frameRate": 60,
+    "fullscreen": false,
+    "windowTitle": "IsoGame Test"
+  },
+  "world": {
+    "tileWidth": 64.0,
+    "tileHeight": 32.0,
+    "worldWidth": 60,
+    "worldHeight": 80
+  },
+  "game": {
+    "difficulty": "normal",
+    "soundEnabled": true
+  }
+}

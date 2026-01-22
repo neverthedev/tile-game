@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <memory>
+#include <string>
 
 #include "collision_system.h"
 #include "input_system.h"
@@ -25,12 +26,12 @@ public:
   float TileWidth;
   float TileHeight;
   int TargetFrameRate;
-  const char *Title;
+  std::string Title;
   bool Initialized;
   ImageHandle Dst;
   Position2D Correction;
 
-  RaylibGraphics(int, int, float, float, const char *, int);
+  RaylibGraphics(int, int, float, float, const std::string, int);
   void InitScreen();
   bool Done();
   ~RaylibGraphics();

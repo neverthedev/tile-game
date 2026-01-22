@@ -1,7 +1,7 @@
 # TASK-09: Extract Hard-Coded Dependencies
 
 **Priority:** 🟢 Medium
-**Status:** 📋 TODO
+**Status:** ✅ DONE
 **Estimated Effort:** Low-Medium
 
 ---
@@ -107,14 +107,20 @@ int main() {
 
 ---
 
-## Implementation Steps
+## Work Completed
 
-1. Create GameConfig class
-2. Add JSON parsing (use nlohmann/json or similar)
-3. Replace hard-coded values
-4. Create default config.json
-5. Add config validation
-6. Add in-game settings menu
+1. Added `GameConfig` class with strict validation and JSON load/save.
+2. Added nlohmann/json via CMake FetchContent.
+3. Replaced hard-coded values in `game.cpp` and `game_interface.cpp`.
+4. Added default `config/config.json` with window title.
+5. Added config copy step in CMake.
+
+## Decisions Made
+
+- JSON library: nlohmann/json (FetchContent).
+- Config location: `raylib-my/config/config.json` copied to build output.
+- Global access: config stored in `ServiceLocator`.
+- Validation: strict (missing/invalid fields are errors).
 
 ---
 
@@ -122,6 +128,7 @@ int main() {
 
 - `src/game.cpp` - Use config instead of constants
 - `src/config/game_config.h` (new)
+- `src/config/game_config.cpp` (new)
 - `config.json` (new)
 - CMakeLists.txt - Copy config to build dir
 

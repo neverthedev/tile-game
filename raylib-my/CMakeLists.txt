@@ -10,6 +10,14 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(FetchContent)
 
+# Dependencies
+FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.3
+)
+FetchContent_MakeAvailable(nlohmann_json)
+
 # Dependencies - use local raylib 5.6-dev from parent directory
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../raylib ${CMAKE_CURRENT_BINARY_DIR}/raylib)
 
@@ -37,7 +45,23 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/src/resources)
     endif()
 endif()
 
+# Copy config if it exists
+if(EXISTS ${CMAKE_SOURCE_DIR}/config)
+    if ("${PLATFORM}" STREQUAL "Web")
+        add_custom_command(
+            TARGET ${PROJECT_NAME} PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/config $<TARGET_FILE_DIR:${PROJECT_NAME}>/../config
+        )
+    else()
+        add_custom_command(
+            TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/config $<TARGET_FILE_DIR:${PROJECT_NAME}>/config
+        )
+    endif()
+endif()
+
 target_link_libraries(${PROJECT_NAME} raylib)
+target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json)
 
 # Web Configurations
 if ("${PLATFORM}" STREQUAL "Web")
