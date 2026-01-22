@@ -22,6 +22,10 @@ public:
   void LoadTexture(ResourcesSystem& resources);
   TextureHandle Texture() const;
   ImageHandle TextureImage() const;
+  WorldTileTerrainType(const WorldTileTerrainType&) = delete;
+  WorldTileTerrainType(WorldTileTerrainType&&) = delete;
+  WorldTileTerrainType& operator=(const WorldTileTerrainType&) = delete;
+  WorldTileTerrainType& operator=(WorldTileTerrainType&&) = delete;
 
 private:
   std::string name;

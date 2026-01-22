@@ -11,10 +11,10 @@ TilesManager::TilesManager() {
 
   for(int i = 0; i < types.size(); ++i) {
     Rectangle2D coords { 1.0f, 49.0f * i + 1.0f, 96.0f, 48.0f };
-    tileTypes.emplace(types[i], WorldTileTerrainType { types[i], mSpds[i], false, txr, coords });
+    tileTypes.try_emplace(types[i],  types[i], mSpds[i], false, txr, coords);
   }
 
-  tileTypes.emplace("Deep Water", WorldTileTerrainType { "Deep Water", 0.5, true, "../../textures/ocean_sm.png", Rectangle2D{0, 0, 0, 0} });
+  tileTypes.try_emplace("Deep Water", "Deep Water", 0.5, true, "../../textures/ocean_sm.png", Rectangle2D{0, 0, 0, 0});
 }
 
 void TilesManager::LoadTextures(ResourcesSystem& resources) {
@@ -23,13 +23,17 @@ void TilesManager::LoadTextures(ResourcesSystem& resources) {
   }
 }
 
-std::vector<std::string> TilesManager::TileTypes() const {
+std::vector<std::string> TilesManager::TileTypeNames() const {
   std::vector<std::string> keys;
   keys.reserve(tileTypes.size());
   for (const auto& [name, tileType] : tileTypes) {
     keys.push_back(name);
   }
   return keys;
+}
+
+const std::unordered_map<std::string, WorldTileTerrainType> &TilesManager::TileTypes() {
+  return tileTypes;
 }
 
 WorldTile* TilesManager::NewTile(std::string typeName, Position2D pos) const {

@@ -68,7 +68,8 @@ public:
   int GetImageWidth(ImageHandle image) const override;
   int GetImageHeight(ImageHandle image) const override;
   void ClearBackground(Color2D color) override;
-  void DrawTexture(TextureHandle texture, Position2D position, Color2D tint) override;
+  void DrawTexture(TextureHandle texture, Position2D position, Color2D tint, float scale = 1.0f) override;
+  void DrawText(const char* text, Position2D position, int fontSize, Color2D color) override;
   void DrawFPS(int x, int y) override;
   void SetDst(ImageHandle dst) override;
   void SetCorrection(Position2D correction) override;

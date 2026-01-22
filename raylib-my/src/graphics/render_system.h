@@ -41,7 +41,8 @@ public:
 
   // Rendering operations
   virtual void ClearBackground(Color2D color) = 0;
-  virtual void DrawTexture(TextureHandle texture, Position2D position, Color2D tint) = 0;
+  virtual void DrawTexture(TextureHandle texture, Position2D position, Color2D tint, float scale = 1.0f) = 0;
+  virtual void DrawText(const char* text, Position2D position, int fontSize, Color2D color) = 0;
   virtual void DrawFPS(int x, int y) = 0;
 
   // Tile rendering state management

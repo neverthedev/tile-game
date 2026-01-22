@@ -15,7 +15,7 @@ public:
   TilesManager();
   void LoadTextures(ResourcesSystem& resources);
   WorldTile* NewTile(std::string, Position2D) const;
-  std::vector<std::string> TileTypes() const;
+  std::vector<std::string> TileTypeNames() const;
   ~TilesManager();
   const std::unordered_map<std::string, WorldTileTerrainType> &TileTypes();
 
