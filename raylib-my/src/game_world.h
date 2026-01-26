@@ -19,6 +19,11 @@ public:
 
   static GameWorld NewWorld(int, int);
 
+  GameWorld(const GameWorld&) = delete;
+  GameWorld& operator=(const GameWorld&) = delete;
+  GameWorld(GameWorld&&) = delete;
+  GameWorld& operator=(GameWorld&&) = delete;
+
   GameWorld(int w, int h, std::unique_ptr<InputComponent>, std::unique_ptr<GraphicsComponent>, std::unique_ptr<UpdateComponent>);
   WorldTile& operator[](Position2D);
   WorldTile& GetTile(int index);
