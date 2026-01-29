@@ -1,7 +1,9 @@
 #include "game_world.h"
+#include <string>
+#include <utility>
+
 #include "services/service_locator.h"
 #include "services/tiles_manager.h"
-
 #include "input_components/camera_component.h"
 #include "graphics_components/camera_component.h"
 #include "update_components/camera_component.h"
@@ -13,7 +15,8 @@ GameWorld::GameWorld(
   int w, int h,
   std::unique_ptr<InputComponent> inp,
   std::unique_ptr<GraphicsComponent> rnd,
-  std::unique_ptr<UpdateComponent> upd
+  std::unique_ptr<UpdateComponent> upd,
+  TilesProvider tilesProvider
 ):
   GameObject(std::move(inp), std::move(rnd), std::move(upd)),
   MapWidth { w },
@@ -26,25 +29,17 @@ GameWorld::GameWorld(
     std::make_unique<CameraUpdateComponent>()
   );
 
-  initializeGrid();
+  InitializeGrid(std::move(tilesProvider));
 };
 
-void GameWorld::initializeGrid() {
-  auto& tilesManager = ServiceLocator::GetTilesManager();
-  int oW = 3;
-  int gW = 10;
-  for (int h = 0; h < MapHeight; ++h) {
-    for (int w  = 0; w < MapWidth; ++w) {
-      if ((w < oW || w > MapWidth - oW - 1) || (h < oW || h > MapHeight - oW - 1)) {
-        std::unique_ptr<WorldTile> tile(tilesManager.NewTile("Deep Water", { (float) w + 0.5f, (float) h + 0.5f }));
-        grid.push_back(std::move(tile));
-      } else if ((w < gW || w > MapWidth - gW - 1) || (h < gW || h > MapHeight - gW - 1)) {
-        std::unique_ptr<WorldTile> tile(tilesManager.NewTile("Plains", { (float) w + 0.5f, (float) h + 0.5f }));
-        grid.push_back(std::move(tile));
-      } else {
-        std::unique_ptr<WorldTile> tile(tilesManager.NewTile("Grassland", { (float) w + 0.5f, (float) h + 0.5f }));
-        grid.push_back(std::move(tile));
+void GameWorld::InitializeGrid(TilesProvider tilesProvider) {
+  for (int y = 0; y < MapHeight; ++y) {
+    for (int x = 0; x < MapWidth; ++x) {
+      std::unique_ptr<WorldTile> tile = tilesProvider(x, y);
+      if (!tile) {
+        throw GameError("Tile provider returned null tile for index x: " + std::to_string(x) + ", y: " + std::to_string(y));
       }
+      grid.push_back(std::move(tile));
     }
   }
 }
@@ -70,11 +65,28 @@ GameWorld::~GameWorld() = default;
 #include "input_components/world_component.h"
 #include "update_components/world_component.h"
 
-GameWorld GameWorld::NewWorld(int w, int h) {
-  return {
+std::unique_ptr<GameWorld> GameWorld::NewWorld(int w, int h) {
+  return NewWorld(w, h, [w, h](int x, int y) {
+    auto& tilesManager = ServiceLocator::GetTilesManager();
+    const int oW = 3;
+    const int gW = 10;
+
+    if ((x < oW) || (y < oW) || (x > w - oW - 1) || (y > h - oW - 1)) {
+      return std::unique_ptr<WorldTile>(tilesManager.NewTile("Deep Water", { static_cast<float>(x) + 0.5f, static_cast<float>(y) + 0.5f }));
+    }
+    if ((x < gW) || (y < gW) || (x > w - gW - 1) || (y > h - gW - 1)) {
+      return std::unique_ptr<WorldTile>(tilesManager.NewTile("Plains", { static_cast<float>(x) + 0.5f, static_cast<float>(y) + 0.5f }));
+    }
+    return std::unique_ptr<WorldTile>(tilesManager.NewTile("Grassland", { static_cast<float>(x) + 0.5f, static_cast<float>(y) + 0.5f }));
+  });
+}
+
+std::unique_ptr<GameWorld> GameWorld::NewWorld(int w, int h, TilesProvider tile_provider) {
+  return std::make_unique<GameWorld>(
     w, h,
     std::make_unique<WorldInputComponent>(),
     std::make_unique<WorldGraphicsComponent>(),
-    std::make_unique<WorldUpdateComponent>()
-  };
+    std::make_unique<WorldUpdateComponent>(),
+    std::move(tile_provider)
+  );
 }

@@ -10,7 +10,7 @@
 class GameInterface: public GameObject {
 public:
   GameInterface(int, int);
-  void AddArea(GameObject&, Rectangle2D, int);
+  void ReplaceWorld(std::unique_ptr<GameWorld>);
   virtual void HandleInput(InputSystem&, CollisionSystem&) override;
   virtual void Update(CollisionSystem&) override;
   virtual void Render(RenderSystem&) override;
@@ -22,6 +22,9 @@ private:
   int screenHeight;
   std::vector<GameArea> gameAreas;
   std::vector<size_t> sortedIndices;
-  GameWorld gameWorld;
+  std::unique_ptr<GameWorld> gameWorld;
   std::unique_ptr<Menu> currentMenu;
+
+  void AddArea(GameObject&, Rectangle2D, int);
+  void RebuildAreas();
 };

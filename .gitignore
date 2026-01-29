@@ -60,3 +60,5 @@ _deps/
 *.code-workspace
 doc_ext/
 .python-version
+
+raylib-my/tmp/

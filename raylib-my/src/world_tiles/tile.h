@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "../common/position_2d.h"
 #include "../common/game_object.h"
 #include "tile_terrain_type.h"
@@ -12,8 +14,8 @@ class WorldTile: public GameObject {
 public:
   bool Dirty;
   Position2D Pos;
-  WorldTileDecoration* Decoration;
-  WorldTileResource* Resource;
+  std::unique_ptr<WorldTileDecoration> Decoration;
+  std::unique_ptr<WorldTileResource> Resource;
   int MowementSpeed;
 
   virtual ~WorldTile();

@@ -7,6 +7,7 @@
 #include "graphics/collision_system.h"
 #include "graphics/input_system.h"
 #include "graphics/render_system.h"
+#include "common/game_error.h"
 
 // TODO: Doesn't follow component pattern, consider to refactor
 GameInterface::GameInterface(int w, int h):
@@ -22,9 +23,17 @@ GameInterface::GameInterface(int w, int h):
     float(screenWidth) - menuWidth, 0, menuWidth, float(screenHeight)
   });
 
-  AddArea(gameWorld, { 0, 0, float(screenWidth), float(screenHeight) }, 0);
-  AddArea(*currentMenu, currentMenu->Position, 1);
+  RebuildAreas();
 };
+
+void GameInterface::ReplaceWorld(std::unique_ptr<GameWorld> new_world) {
+  if (!new_world) {
+    throw GameError("Cannot replace world with null instance");
+  }
+
+  gameWorld = std::move(new_world);
+  RebuildAreas();
+}
 
 void GameInterface::AddArea(GameObject& obj, Rectangle2D pos, int priority) {
   gameAreas.emplace_back(obj, pos, priority);
@@ -35,6 +44,14 @@ void GameInterface::AddArea(GameObject& obj, Rectangle2D pos, int priority) {
     [this](size_t i1, size_t i2) {
       return gameAreas[i1].priority < gameAreas[i2].priority;
     });
+}
+
+void GameInterface::RebuildAreas() {
+  gameAreas.clear();
+  sortedIndices.clear();
+
+  AddArea(*gameWorld, { 0, 0, float(screenWidth), float(screenHeight) }, 0);
+  AddArea(*currentMenu, currentMenu->Position, 1);
 }
 
 void GameInterface::HandleInput(InputSystem& input, CollisionSystem& collision) {

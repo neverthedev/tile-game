@@ -6,28 +6,9 @@
 
 #include <nlohmann/json.hpp>
 
+#include "../common/json_require.h"
+
 using nlohmann::json;
-
-namespace {
-  const json& RequireObject(const json& j, const char* name) {
-    if (!j.contains(name) || !j.at(name).is_object()) {
-      throw std::runtime_error(std::string("Missing or invalid object: ") + name);
-    }
-    return j.at(name);
-  }
-
-  template <typename T>
-  T RequireField(const json& j, const char* name) {
-    if (!j.contains(name)) {
-      throw std::runtime_error(std::string("Missing required field: ") + name);
-    }
-    try {
-      return j.at(name).get<T>();
-    } catch (const std::exception& ex) {
-      throw std::runtime_error(std::string("Invalid field type: ") + name + ": " + ex.what());
-    }
-  }
-}
 
 GameConfig GameConfig::LoadFromFile(const std::string& path) {
   std::ifstream file(path);
@@ -56,20 +37,24 @@ GameConfig GameConfig::LoadFromJson(const std::string& json_text) {
     throw std::runtime_error(std::string("Failed to parse config JSON: ") + ex.what());
   }
 
-  const json& display = RequireObject(j, "display");
-  const json& world = RequireObject(j, "world");
+  auto throw_runtime = [](const std::string& msg) {
+    throw std::runtime_error(msg);
+  };
+
+  const json& display = JsonRequire::Object(j, "display", throw_runtime);
+  const json& world = JsonRequire::Object(j, "world", throw_runtime);
 
   GameConfig config;
-  config.ScreenWidth = RequireField<int>(display, "screenWidth");
-  config.ScreenHeight = RequireField<int>(display, "screenHeight");
-  config.FrameRate = RequireField<int>(display, "frameRate");
-  config.Fullscreen = RequireField<bool>(display, "fullscreen");
-  config.WindowTitle = RequireField<std::string>(display, "windowTitle");
+  config.ScreenWidth = JsonRequire::Field<int>(display, "screenWidth", throw_runtime);
+  config.ScreenHeight = JsonRequire::Field<int>(display, "screenHeight", throw_runtime);
+  config.FrameRate = JsonRequire::Field<int>(display, "frameRate", throw_runtime);
+  config.Fullscreen = JsonRequire::Field<bool>(display, "fullscreen", throw_runtime);
+  config.WindowTitle = JsonRequire::Field<std::string>(display, "windowTitle", throw_runtime);
 
-  config.TileWidth = RequireField<float>(world, "tileWidth");
-  config.TileHeight = RequireField<float>(world, "tileHeight");
-  config.WorldWidth = RequireField<int>(world, "worldWidth");
-  config.WorldHeight = RequireField<int>(world, "worldHeight");
+  config.TileWidth = JsonRequire::Field<float>(world, "tileWidth", throw_runtime);
+  config.TileHeight = JsonRequire::Field<float>(world, "tileHeight", throw_runtime);
+  config.WorldWidth = JsonRequire::Field<int>(world, "worldWidth", throw_runtime);
+  config.WorldHeight = JsonRequire::Field<int>(world, "worldHeight", throw_runtime);
 
   config.Validate();
   return config;

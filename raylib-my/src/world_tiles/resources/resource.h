@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 
 enum class ResourceType { Coil, Clay, Iron, Copper };
@@ -9,11 +10,11 @@ public:
   std::string Name;
   ResourceType Type;
 
-  WorldTileResource(ResourceType, std::string, int);
-  int Volume();
+  WorldTileResource(ResourceType, std::string, uint32_t);
+  uint32_t Volume();
   ~WorldTileResource();
 
 private:
-  int volume;
-  int initialVolume;
+  uint32_t volume;
+  uint32_t initialVolume;
 };
