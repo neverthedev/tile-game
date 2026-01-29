@@ -400,7 +400,6 @@ Example schema (v1):
       "Grassland": 2
     },
     "decorationTypes": {
-      "None": 0,
       "Grass": 1,
       "Rock": 2,
       "Wall": 3,
@@ -408,7 +407,6 @@ Example schema (v1):
       "Road": 5
     },
     "resourceTypes": {
-      "None": 0,
       "Coil": 1,
       "Clay": 2,
       "Iron": 3,
@@ -446,7 +444,8 @@ Notes:
 - `resourceVolumes` uses `u32` even when `encoding.valueType` is `u16` (it’s always `u32 little-endian` in v1).
 - `decorationStates` uses `u32 little-endian` in v1.
 - `valueType` is `u16` to keep v1 simple and robust.
-- Use `None: 0` for decorations/resources to represent “no decoration/resource” per tile.
+- `decorationTypeId == 0` and `resourceTypeId == 0` are reserved for “no decoration/resource”.
+  - Type maps may omit id 0; the reader treats it as empty.
 - `resourceVolumes` is packed: it contains values only for tiles where `resources[i] != 0`, in row-major scan order.
 - `decorationStates` is packed: it contains values only for tiles where `decorations[i] != 0`, in row-major scan order.
 - We can add `compression` later (e.g. `zstd`) as an optional, layered step: `raw bytes -> compress -> base64`.

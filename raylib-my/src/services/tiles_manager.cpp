@@ -1,6 +1,7 @@
 #include "tiles_manager.h"
 
 #include "../common/rectangle_2d.h"
+#include "../common/game_error.h"
 #include "../graphics/resources_system.h"
 
 TilesManager::TilesManager() {
@@ -15,6 +16,21 @@ TilesManager::TilesManager() {
   }
 
   tileTypes.try_emplace("Deep Water", "Deep Water", 0.5, true, "../../textures/ocean_sm.png", Rectangle2D{0, 0, 0, 0});
+
+  decorationTypes = {
+    { "Grass", WorldDecorationType::Grass },
+    { "Rock", WorldDecorationType::Rock },
+    { "Wall", WorldDecorationType::Wall },
+    { "Tree", WorldDecorationType::Tree },
+    { "Road", WorldDecorationType::Road }
+  };
+
+  resourceTypes = {
+    { "Coil", ResourceType::Coil },
+    { "Clay", ResourceType::Clay },
+    { "Iron", ResourceType::Iron },
+    { "Copper", ResourceType::Copper }
+  };
 }
 
 void TilesManager::LoadTextures(ResourcesSystem& resources) {
@@ -38,6 +54,22 @@ const std::unordered_map<std::string, WorldTileTerrainType> &TilesManager::TileT
 
 WorldTile* TilesManager::NewTile(std::string typeName, Position2D pos) const {
   return Type(typeName).NewTile(pos);
+}
+
+WorldDecorationType TilesManager::DecorationTypeByName(const std::string& name) const {
+  auto it = decorationTypes.find(name);
+  if (it == decorationTypes.end()) {
+    throw GameError("Unknown decoration type name: " + name);
+  }
+  return it->second;
+}
+
+ResourceType TilesManager::ResourceTypeByName(const std::string& name) const {
+  auto it = resourceTypes.find(name);
+  if (it == resourceTypes.end()) {
+    throw GameError("Unknown resource type name: " + name);
+  }
+  return it->second;
 }
 
 const WorldTileTerrainType& TilesManager::Type(std::string typeName) const {

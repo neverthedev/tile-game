@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <limits>
 #include <sstream>
 #include <unordered_map>
 #include <vector>
@@ -224,7 +225,17 @@ void JsonFileStorage::LoadFromJson(const std::string& json_text) {
     meta.camera = state;
   }
 
-  const size_t tileCount = static_cast<size_t>(width) * static_cast<size_t>(height);
+  if (width <= 0 || height <= 0) {
+    throw GameError("World dimensions must be positive");
+  }
+
+  const size_t maxSize = std::numeric_limits<size_t>::max();
+  const size_t widthSize = static_cast<size_t>(width);
+  const size_t heightSize = static_cast<size_t>(height);
+  if (widthSize > maxSize / heightSize) {
+    throw GameError("World dimensions are too large to allocate tile grid");
+  }
+  const size_t tileCount = widthSize * heightSize;
   tiles = DecodeU16Array(JsonRequire::Field<std::string>(world, "tiles", ThrowGameError), tileCount, "tiles");
   decorations = DecodeU16Array(JsonRequire::Field<std::string>(world, "decorations", ThrowGameError), tileCount, "decorations");
   resources = DecodeU16Array(JsonRequire::Field<std::string>(world, "resources", ThrowGameError), tileCount, "resources");

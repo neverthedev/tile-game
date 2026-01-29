@@ -3,6 +3,10 @@
 #include <limits>
 #include <string>
 
+// TODO: This class carries too much validation and implicit contract knowledge.
+//   It depends on WorldMeta and WorldTileData rules (name tables must be complete, id 0 means
+//   empty resources/decorations, decorationState/resourceVolume presence rules, etc).
+//   Refactor after Task-19 to separate validation from construction.
 WorldLoadService::WorldLoadService(const TilesManager& tilesMngr, WorldDataReader& rdr):
   reader { rdr },
   worldMeta { },
@@ -10,31 +14,18 @@ WorldLoadService::WorldLoadService(const TilesManager& tilesMngr, WorldDataReade
 {}
 
 std::unique_ptr<WorldTileDecoration> WorldLoadService::BuildDecoration(const std::string& decoration_name) const {
-  if (decoration_name == "None") return nullptr;
-
-  auto it = decorationTypes.find(decoration_name);
-  if (it == decorationTypes.end()) {
-    throw GameError("Unknown decoration type name: " + decoration_name);
-  }
-
-  return std::make_unique<WorldTileDecoration>(it->second, decoration_name);
+  return std::make_unique<WorldTileDecoration>(
+    tilesManager.DecorationTypeByName(decoration_name),
+    decoration_name
+  );
 }
 
 std::unique_ptr<WorldTileResource> WorldLoadService::BuildResource(const std::string& resource_name, uint32_t volume) const {
-  if (resource_name == "None") return nullptr;
-
-  if (volume > static_cast<uint32_t>(std::numeric_limits<int>::max())) {
-    throw GameError("Resource volume too large: " + std::to_string(volume));
-  }
-
-  const int volumeInt = static_cast<int>(volume);
-
-  auto it = resourceTypes.find(resource_name);
-  if (it == resourceTypes.end()) {
-    throw GameError("Unknown resource type name: " + resource_name);
-  }
-
-  return std::make_unique<WorldTileResource>(it->second, resource_name, volumeInt);
+  return std::make_unique<WorldTileResource>(
+    tilesManager.ResourceTypeByName(resource_name),
+    resource_name,
+    volume
+  );
 }
 
 std::unique_ptr<WorldTile> WorldLoadService::ProvideTile(int x, int y) const {
@@ -64,6 +55,10 @@ std::unique_ptr<WorldTile> WorldLoadService::ProvideTile(int x, int y) const {
         " at x: " + std::to_string(x) + ", y: " + std::to_string(y));
     }
     const std::string& decorationName = worldMeta.decorationNamesById[tileData.decorationTypeId];
+    if (decorationName.empty()) {
+      throw GameError("Missing decoration type name for decorationTypeId="
+        + std::to_string(tileData.decorationTypeId));
+    }
     tile->Decoration = BuildDecoration(decorationName);
   }
 
@@ -76,6 +71,10 @@ std::unique_ptr<WorldTile> WorldLoadService::ProvideTile(int x, int y) const {
       throw GameError("Missing resource volume at x: " + std::to_string(x) + ", y: " + std::to_string(y));
     }
     const std::string& resourceName = worldMeta.resourceNamesById[tileData.resourceTypeId];
+    if (resourceName.empty()) {
+      throw GameError("Missing resource type name for resourceTypeId="
+        + std::to_string(tileData.resourceTypeId));
+    }
     tile->Resource = BuildResource(resourceName, *tileData.resourceVolume);
   }
 
@@ -89,7 +88,14 @@ std::unique_ptr<GameWorld> WorldLoadService::BuildWorld() {
     throw GameError("World dimensions must be positive");
   }
 
-  const size_t tileCount = static_cast<size_t>(worldMeta.width) * static_cast<size_t>(worldMeta.height);
+  const size_t maxSize = std::numeric_limits<size_t>::max();
+  const size_t widthSize = static_cast<size_t>(worldMeta.width);
+  const size_t heightSize = static_cast<size_t>(worldMeta.height);
+  if (widthSize > maxSize / heightSize) {
+    throw GameError("World dimensions are too large to allocate tile grid");
+  }
+
+  const size_t tileCount = widthSize * heightSize;
   reader.BeginTileScan();
 
   auto world = GameWorld::NewWorld(worldMeta.width, worldMeta.height, [this](int x, int y) {
