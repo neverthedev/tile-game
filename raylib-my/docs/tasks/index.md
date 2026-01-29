@@ -25,7 +25,7 @@ This document lists all identified improvements for the project architecture.
 | [TASK-04](task-04-component-ownership.md) | Clarify component ownership | ✅ DONE | 🟡 High |
 | [TASK-05](task-05-abstract-raylib.md) | Abstract raylib dependencies | ✅ DONE | 🟡 High |
 | [TASK-06](task-06-error-handling.md) | Define error handling strategy | 📋 TODO | 🟡 High |
-| [TASK-15](task-15-world-save-load.md) | Save/restore world state to/from file | 📋 TODO | 🟡 High |
+| [TASK-15](task-15-world-save-load.md) | Save/restore world state to/from file | 🚧 IN PROGRESS | 🟡 High |
 
 ## Medium Priority 🟢
 
@@ -99,4 +99,4 @@ To begin working on a task:
 
 ---
 
-Last Updated: January 23, 2026
+Last Updated: January 29, 2026

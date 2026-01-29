@@ -1,7 +1,7 @@
 # TASK-15: Save/Restore World State to/from File
 
 **Priority:** 🟡 High
-**Status:** 📋 TODO
+**Status:** 🚧 IN PROGRESS
 **Estimated Effort:** Medium-High
 
 ---
@@ -29,6 +29,38 @@ Provide a stable, versioned save/load format that can round-trip:
 - Per-tile optional decoration + resource (and their state, if any)
 - Optional: camera view state (offset/target/rotation/zoom)
 - Save/load should be reachable via config + hotkeys (see Runtime Integration).
+
+## Current Progress (as of January 29, 2026)
+
+✅ Implemented (loading pipeline)
+- `WorldDataReader` contract + DTOs (`WorldMeta`, `WorldTileData`, `CameraState`).
+- `JsonFileStorage` (reader) that:
+  - loads full JSON first, then validates (same pattern as `GameConfig`),
+  - validates `saveVersion == 1` and `encoding` fields,
+  - decodes Base64 blobs into typed arrays,
+  - validates packed `resourceVolumes` / `decorationStates` sizes vs non-zero id counts,
+  - streams tiles via `BeginTileScan()` + `NextTile()` (row-major).
+- `WorldLoadService` that builds a new `GameWorld` from `WorldDataReader`, using:
+  - `GameWorld::NewWorld(width, height, TilesProvider)` to populate the grid,
+  - `TilesManager::NewTile(tileTypeName, pos)` for terrain tiles,
+  - decoration/resource reconstruction from ids + packed state.
+- `GameWorld` now supports tile construction via `TilesProvider` and stores tiles as `std::unique_ptr`.
+- `WorldTile` now owns `Decoration` / `Resource` as `std::unique_ptr`.
+- Shared utilities:
+  - Base64 decoding extracted to `src/common/base64.*`
+  - JSON “require” helpers extracted to `src/common/json_require.h`
+
+🚧 Not implemented yet (still required for this task)
+- A `WorldGenerator` strategy (`WorldDataReader`) for procedural generation.
+- A “persistence service” that performs startup load-or-generate and runtime save/load orchestration.
+- Saving pipeline:
+  - `WorldDataWriter` contract + `WorldSaver` to extract `GameWorld` into the format-neutral snapshot
+  - `JsonFileStorage` (writer) to encode blobs + write JSON
+- Runtime integration:
+  - add config field `game.saveFile` (default `saves/world.json`)
+  - `F5` save, `F6` load (and world swap in `GameInterface` without dangling `GameArea` references)
+- Saving-side identifiers:
+  - a stable way to read tile type name from a `WorldTile` (to build the type maps)
 
 ### Proposed File Format (JSON, versioned)
 
@@ -160,29 +192,36 @@ To serialize and restore correctly, the save layer needs stable identifiers:
      - Option B: store `terrainTypeName` on `WorldTile` when created.
 
 2. **Decoration/resource representation**
-   - Decide how these are created/owned (currently raw pointers on `WorldTile`).
+   - Decide how these are created/owned (now `std::unique_ptr` on `WorldTile`).
    - Save as either:
      - Enum values as strings (`"Tree"`, `"Iron"`) + optional fields (e.g. `volume`)
      - Or as fully qualified names if those are the true identifiers.
 
 3. **World swapping**
-   - `GameInterface` stores `GameWorld gameWorld;` by value, and `GameArea` stores references.
-   - Loading a new world likely requires rebuilding the `GameInterface` areas list or storing the world via pointer/`unique_ptr`.
+   - `GameInterface` stores `gameWorld` as `std::unique_ptr<GameWorld>`, but `GameArea` stores references to `GameObject`.
+   - Loading a new world requires rebuilding or updating the `GameInterface` areas list to avoid dangling references.
    - `F6` load should replace the world at runtime (not only at startup), so this refactor is required for v1.
 
 ---
 
 ## Implementation Steps
 
-1. **Define save model + JSON IO**
-  - Add `src/save/world_save.h/.cpp` (or `src/persistence/` if preferred).
-  - Implement:
-     - `WorldSave LoadFromFile(const std::string& path);`
-     - `void SaveToFile(const std::string& path) const;`
-  - Follow `GameConfig`’s strict parsing pattern (required objects/fields + type checks).
-  - Implement Base64 encode/decode (small local implementation; no new dependencies).
+1. **Define format-neutral contract + JSON IO**
+  - ✅ `WorldDataReader` + DTOs (`WorldMeta`, `WorldTileData`, `CameraState`).
+  - ✅ `JsonFileStorage` reader (LoadFromJson + ValidateLoadedData, Base64 decode).
+  - ⬜ Add `WorldDataWriter` interface and implement writer side in `JsonFileStorage`.
+  - ⬜ Implement Base64 encode (decode exists).
 
-2. **Serialize GameWorld → WorldSave**
+2. **Implement generation + startup policy (load-or-generate)**
+   - ⬜ Create `WorldGenerator` that implements `WorldDataReader` for procedural worlds.
+   - ⬜ Move current procedural logic from `GameWorld::NewWorld(int,int)` into `WorldGenerator`.
+   - ⬜ Create `WorldPersistenceService` and make startup use it:
+     - `LoadWorld()` uses `JsonFileStorage` + `WorldLoadService`.
+     - `GenerateWorld()` uses `WorldGenerator` + `WorldLoadService`.
+     - `LoadOrGenerate()` selects the strategy (try load; on failure generate).
+     - `SaveWorld()` exists but is a stub/disabled until saving pipeline is completed.
+
+3. **Serialize GameWorld → WorldSave**
    - Iterate tiles in a deterministic order (row-major).
    - Capture:
      - `width`, `height`
@@ -195,30 +234,24 @@ To serialize and restore correctly, the save layer needs stable identifiers:
      - decoration state fields:
        - packed decoration state array (`u32`, Base64) only where `decorationId != 0`
      - optional camera state
+   - ⬜ Not implemented (requires stable “tile type name” getter on `WorldTile` / terrain type).
 
-3. **Restore WorldSave → GameWorld**
-   - Create a new `GameWorld` instance sized as saved.
-   - Decode Base64 tile map, validate length matches `width * height`.
-   - Decode Base64 decoration/resource maps, validate lengths match `width * height`.
-   - Decode packed `resourceVolumes` / `decorationStates` and validate element counts match the number of non-zero ids.
-   - For each cell, resolve `tileTypeId -> tileTypeName` via the inverse of `tileTypes`.
-   - Rebuild each tile using `TilesManager::NewTile(tileTypeName, pos)` and apply decoration/resource.
-    - Ensure rendering updates:
-      - Mark all tiles as `Dirty = true`.
-      - Ensure the world graphics component reinitializes when the world instance is replaced.
+4. **Restore WorldSave → GameWorld**
+   - ✅ Implemented via `WorldLoadService` + `JsonFileStorage`.
+   - Notes:
+     - extra-tile data after the expected tile count is treated as an error.
 
-4. **Integrate with runtime**
-   - Load on game initialization using `saveFile` from config.
-   - Add hotkeys:
+5. **Integrate with runtime**
+   - ⬜ Load-or-generate on game initialization via `WorldPersistenceService` using `saveFile` from config.
+   - ⬜ Add hotkeys:
      - `F5` save to `saveFile`
      - `F6` load from `saveFile`
-   - Provide actionable error messages on failure (file not found, invalid JSON, unknown terrain type).
-   - Ensure `saves/` directory exists when saving.
+   - ⬜ Implement safe world swap in `GameInterface` (update `GameArea` references).
+   - ⬜ Ensure `saves/` directory exists when saving.
 
-5. **Add format versioning strategy**
-   - Keep `saveVersion` required.
-   - On load, reject unknown versions with a clear message.
-   - If we anticipate evolution soon, add an explicit migration step (v1 → current).
+6. **Add format versioning strategy**
+   - ✅ `saveVersion` required and validated on load.
+   - ⬜ Add migration strategy (if/when v2 happens).
 
 ---
 
@@ -237,8 +270,14 @@ To serialize and restore correctly, the save layer needs stable identifiers:
 - `raylib-my/src/world_tiles/tile.h`
 - `raylib-my/src/world_tiles/resources/resource.h`
 - `raylib-my/src/world_tiles/decorations/decoration.h`
-- `raylib-my/src/save/world_save.h` (new)
-- `raylib-my/src/save/world_save.cpp` (new)
+- `raylib-my/src/world_persistence/world_data_reader.h` (new)
+- `raylib-my/src/world_persistence/json_file_storage.h` (new)
+- `raylib-my/src/world_persistence/json_file_storage.cpp` (new)
+- `raylib-my/src/world_persistence/world_load_service.h` (new)
+- `raylib-my/src/world_persistence/world_load_service.cpp` (new)
+- `raylib-my/src/common/base64.h` (new)
+- `raylib-my/src/common/base64.cpp` (new)
+- `raylib-my/src/common/json_require.h` (new)
 
 ---
 

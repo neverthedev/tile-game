@@ -22,7 +22,7 @@ GameInterface::GameInterface(int w, int h):
     float(screenWidth) - menuWidth, 0, menuWidth, float(screenHeight)
   });
 
-  AddArea(gameWorld, { 0, 0, float(screenWidth), float(screenHeight) }, 0);
+  AddArea(*gameWorld, { 0, 0, float(screenWidth), float(screenHeight) }, 0);
   AddArea(*currentMenu, currentMenu->Position, 1);
 };
 

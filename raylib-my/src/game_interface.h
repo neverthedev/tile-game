@@ -21,7 +21,7 @@ private:
   int screenHeight;
   std::vector<GameArea> gameAreas;
   std::vector<size_t> sortedIndices;
-  GameWorld gameWorld;
+  std::unique_ptr<GameWorld> gameWorld;
   std::unique_ptr<Menu> currentMenu;
 
   void AddArea(GameObject&, Rectangle2D, int);
