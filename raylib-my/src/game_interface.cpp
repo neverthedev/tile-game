@@ -1,23 +1,22 @@
 #include "game_interface.h"
 
-#include "services/service_locator.h"
 #include "common/position_2d.h"
 #include "common/rectangle_2d.h"
-#include "config/game_config.h"
 #include "graphics/collision_system.h"
 #include "graphics/input_system.h"
 #include "graphics/render_system.h"
 #include "common/game_error.h"
+#include "world_persistence/world_persistence_service.h"
 
 // TODO: Doesn't follow component pattern, consider to refactor
 GameInterface::GameInterface(int w, int h):
   screenWidth { w },
   screenHeight { h },
-  gameWorld { GameWorld::NewWorld(
-    ServiceLocator::GetConfig().WorldWidth,
-    ServiceLocator::GetConfig().WorldHeight
-  ) }
+  gameWorld { nullptr },
+  currentMenu { nullptr }
 {
+  gameWorld = WorldPersistenceService::CreateFromServices().LoadOrGenerate();
+
   float menuWidth = 210.0f;
   currentMenu = MenuFactory::CreateDecorationMenu({
     float(screenWidth) - menuWidth, 0, menuWidth, float(screenHeight)

@@ -49,9 +49,9 @@ package GameObjects as  GameObjectsPackage <<GameObject>> #lightBlue {
     - position: Rectangle2D
   }
 
-  GameInterface *--- GameArea
+  GameInterface *-- GameArea
 
-  note top of GameArea
+  note left of GameArea
     GameObject can be
     Menu or GameWorld
   end note
@@ -59,8 +59,6 @@ package GameObjects as  GameObjectsPackage <<GameObject>> #lightBlue {
 
 package "GameWorld" as GameWorldPackage #LightYellow {
   class GameWorld {
-    {static} NewWorld(int width, int height): std::unique_ptr<GameWorld>
-    {static} NewWorld(int width, int height, TilesProvider tiles): std::unique_ptr<GameWorld>
     - grid[][]: Tile
     - camera: GameCamera
   }
@@ -71,18 +69,19 @@ package "WorldPersistence" as WorldPersistencePackage #LightGreen {
     Loads/saves world snapshots to/from file and
     provides startup load-or-generate behavior.
     ----
-    + <b>constructor</b> WorldPersistenceService(GameConfig config)
+    + <b>constructor</b> WorldPersistenceService(GameConfig config, TilesManager tilesManager)
+    + {static} CreateFromServices(): WorldPersistenceService
     + LoadOrGenerate(): std::unique_ptr<GameWorld>
     + LoadWorld(): std::unique_ptr<GameWorld>
     + SaveWorld(const GameWorld& world): void
+    - {static} BuildWorldWithTiles(int width, int height, TileProvider tilesProvider): std::unique_ptr<GameWorld>
   }
 }
 
-ServiceLocator .. GameInterface: > config
-ServiceLocator .. Menu: > config
-ServiceLocator .. GameWorld: > config, \n tilesManager
-ServiceLocator .. DecorationMenu: > tilesManager
-ServiceLocator .. WorldPersistenceService: > config, \n tilesManager
+GameWorld <.. WorldPersistenceService: < Generates
+
+DecorationMenu <.. ServiceLocator: < tilesManager
+WorldPersistenceService <.. ServiceLocator: < config, \n tilesManager
 
 Menu - GameInterface
 GameInterface - GameWorld
@@ -98,7 +97,7 @@ GameWorld - GameArea
 - `WorldDataReader`/`WorldDataWriter` must expose a format-neutral data contract (tile type maps + blobs + packed state arrays), not JSON/Base64 details.
 - World packing rules (e.g., state arrays stored only for non-zero ids) must live in exactly one place per strategy:
   - file strategy: `JsonFileStorage`
-  - generation strategy: `WorldGenerator`
+  - generation strategy: `SimpleWorldGenerator`
 - `WorldLoadService` must stay free of encoding/persistence knowledge: it only consumes `WorldDataReader` and produces a new `GameWorld`.
 - `WorldPersistenceService` is the policy owner: decides which `WorldDataReader` strategy to use (load vs generate) and triggers save/load via hotkeys/startup.
 
@@ -110,8 +109,6 @@ top to bottom direction
 
 package "GameWorld" as GameWorldPackage #LightYellow {
   class GameWorld {
-    {static} NewWorld(int width, int height): std::unique_ptr<GameWorld>
-    {static} NewWorld(int width, int height, TilesProvider tiles): std::unique_ptr<GameWorld>
     - grid[][]: Tile
     - camera: GameCamera
   }
@@ -125,10 +122,12 @@ package "WorldPersistence" as WorldPersistencePackage #LightGreen {
     ----
     Uses `config.game.saveFile` as the target path.
     ----
-    + <b>constructor</b> WorldPersistenceService(GameConfig config)
+    + <b>constructor</b> WorldPersistenceService(GameConfig config, TilesManager tilesManager)
+    + {static} CreateFromServices(): WorldPersistenceService
     + LoadOrGenerate(): std::unique_ptr<GameWorld>
     + LoadWorld(): std::unique_ptr<GameWorld>
     + SaveWorld(const GameWorld& world): void
+    - {static} BuildWorldWithTiles(int width, int height, TileProvider tilesProvider): std::unique_ptr<GameWorld>
   }
 
   interface WorldDataReader {
@@ -147,7 +146,7 @@ package "WorldPersistence" as WorldPersistencePackage #LightGreen {
     Builds a new GameWorld instance using WorldDataReader.
     Responsible for world reconstruction (tiles/resources/decorations).
     ----
-    + <b>constructor</b> WorldLoadService(const TilesManager& tiles, WorldDataReader& reader)
+    + <b>constructor</b> WorldLoadService(const TilesManager& tiles, WorldDataReader& reader, WorldBuilder worldBuilder)
     + BuildWorld(): std::unique_ptr<GameWorld>
   }
 
@@ -161,7 +160,7 @@ package "WorldPersistence" as WorldPersistencePackage #LightGreen {
     Stores the in-memory save snapshot (type maps + blobs).
   }
 
-  class WorldGenerator {
+  class SimpleWorldGenerator {
     Procedural world creation (seeded).
     Independent from file format and IO.
     ----
@@ -183,7 +182,7 @@ package "WorldPersistence" as WorldPersistencePackage #LightGreen {
 
   WorldDataReader <|-- JsonFileStorage
   WorldDataWriter <|-- JsonFileStorage
-  WorldDataReader <|-- WorldGenerator
+  WorldDataReader <|-- SimpleWorldGenerator
 
   WorldPersistenceService .up.> GameWorld
   WorldSaver .left.> TilesManager
@@ -191,12 +190,12 @@ package "WorldPersistence" as WorldPersistencePackage #LightGreen {
   note right of WorldPersistenceService
     Selects WorldDataReader strategy:
     - JsonFileStorage (load)
-    - WorldGenerator (generate)
+    - SimpleWorldGenerator (generate)
     and passes it (plus TilesManager) to WorldLoadService
   end note
 
   note bottom of WorldLoadService
-    Provides GameWorld with a `TilesProvider` function
+    Provides GameWorld with a `TileProvider` function
     which pulls tile data from WorldDataReader (stream)
     and uses TilesManager to create actual tile objects.
   end note
@@ -215,7 +214,7 @@ class WorldLoadService {
   Builds a new GameWorld instance from WorldDataReader.
   WorldDataReader hides encoding/packing details.
   ----
-  + <b>constructor</b> WorldLoadService(const TilesManager& tiles, WorldDataReader& reader)
+  + <b>constructor</b> WorldLoadService(const TilesManager& tiles, WorldDataReader& reader, WorldBuilder worldBuilder)
   + BuildWorld(): std::unique_ptr<GameWorld>
   - ProvideTile(x: int, y: int): std::unique_ptr<WorldTile>
 }
@@ -307,8 +306,16 @@ note left of JsonFileStorage
   WorldDataReader contract.
 end note
 
-class WorldGenerator
-WorldDataReader <|.. WorldGenerator
+class SimpleWorldGenerator
+class SimpleWorldGenerator {
+  Procedural world generation.
+  ----
+  + <b>constructor</b> SimpleWorldGenerator(int width, int height)
+  + ReadMeta(): WorldMeta
+  + BeginTileScan(): void
+  + NextTile(): WorldTileData?
+}
+WorldDataReader <|.. SimpleWorldGenerator
 
 @enduml
 ```
@@ -326,7 +333,7 @@ WorldDataReader <|.. WorldGenerator
 
 ```plantuml
 @startuml
-title Startup: load world and build tiles via GameWorld::TilesProvider
+title Startup: load world and build tiles via GameWorld::TileProvider
 
 actor "Game Startup" as Startup
 
@@ -335,7 +342,7 @@ participant JsonFileStorage as Storage
 participant WorldLoadService as Loader
 participant TilesManager as Tiles
 participant "GameWorld" as World
-participant "GameWorld::TilesProvider" as TilesProvider
+participant "GameWorld::TileProvider" as TileProvider
 
 Startup -> Persist: LoadOrGenerate()
 
@@ -346,16 +353,16 @@ Persist -> Loader: BuildWorld()
 Loader -> Storage: ReadMeta()
 Loader -> Storage: BeginTileScan()
 
-Loader -> World: NewWorld(width, height, TilesProvider)
+Loader -> World: new GameWorld(width, height, TileProvider)
 activate World
-World -> World: InitializeGrid(TilesProvider)
+World -> World: InitializeGrid(TileProvider)
 loop for each (x,y) in row-major
-  World -> TilesProvider: (x,y)
-  TilesProvider -> Loader: ProvideTile(x,y)
+  World -> TileProvider: (x,y)
+  TileProvider -> Loader: ProvideTile(x,y)
   Loader -> Storage: NextTile()
   Loader -> Tiles: NewTile(tileTypeName, pos)
-  Loader --> TilesProvider: std::unique_ptr<WorldTile>
-  TilesProvider --> World: std::unique_ptr<WorldTile>
+  Loader --> TileProvider: std::unique_ptr<WorldTile>
+  TileProvider --> World: std::unique_ptr<WorldTile>
 end
 deactivate World
 

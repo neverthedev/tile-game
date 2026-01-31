@@ -7,10 +7,11 @@
 //   It depends on WorldMeta and WorldTileData rules (name tables must be complete, id 0 means
 //   empty resources/decorations, decorationState/resourceVolume presence rules, etc).
 //   Refactor after Task-19 to separate validation from construction.
-WorldLoadService::WorldLoadService(const TilesManager& tilesMngr, WorldDataReader& rdr):
+WorldLoadService::WorldLoadService(const TilesManager& tilesMngr, WorldDataReader& rdr, WorldBuilder builder):
   reader { rdr },
   worldMeta { },
-  tilesManager { tilesMngr }
+  tilesManager { tilesMngr },
+  worldBuilder { std::move(builder) }
 {}
 
 std::unique_ptr<WorldTileDecoration> WorldLoadService::BuildDecoration(const std::string& decoration_name) const {
@@ -98,7 +99,11 @@ std::unique_ptr<GameWorld> WorldLoadService::BuildWorld() {
   const size_t tileCount = widthSize * heightSize;
   reader.BeginTileScan();
 
-  auto world = GameWorld::NewWorld(worldMeta.width, worldMeta.height, [this](int x, int y) {
+  if (!worldBuilder) {
+    throw GameError("WorldLoadService requires a world builder");
+  }
+
+  auto world = worldBuilder(worldMeta.width, worldMeta.height, [this](int x, int y) {
     return ProvideTile(x, y);
   });
 

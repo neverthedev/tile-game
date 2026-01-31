@@ -10,7 +10,7 @@
 
 `GameWorld` is created procedurally at startup and cannot be persisted:
 
-- The world grid is generated in `GameWorld::initializeGrid()`.
+- The world grid is generated via a procedural `SimpleWorldGenerator`.
 - There is no way to save the current world (tiles, decorations, resources, etc.) to disk.
 - There is no way to restore a saved world from disk.
 
@@ -30,7 +30,7 @@ Provide a stable, versioned save/load format that can round-trip:
 - Optional: camera view state (offset/target/rotation/zoom)
 - Save/load should be reachable via config + hotkeys (see Runtime Integration).
 
-## Current Progress (as of January 29, 2026)
+## Current Progress (as of January 31, 2026)
 
 ✅ Implemented (loading pipeline)
 - `WorldDataReader` contract + DTOs (`WorldMeta`, `WorldTileData`, `CameraState`).
@@ -41,18 +41,18 @@ Provide a stable, versioned save/load format that can round-trip:
   - validates packed `resourceVolumes` / `decorationStates` sizes vs non-zero id counts,
   - streams tiles via `BeginTileScan()` + `NextTile()` (row-major).
 - `WorldLoadService` that builds a new `GameWorld` from `WorldDataReader`, using:
-  - `GameWorld::NewWorld(width, height, TilesProvider)` to populate the grid,
+  - a world builder in `WorldPersistenceService` to populate the grid,
   - `TilesManager::NewTile(tileTypeName, pos)` for terrain tiles,
   - decoration/resource reconstruction from ids + packed state.
-- `GameWorld` now supports tile construction via `TilesProvider` and stores tiles as `std::unique_ptr`.
+- `GameWorld` now supports tile construction via `TileProvider` and stores tiles as `std::unique_ptr`.
 - `WorldTile` now owns `Decoration` / `Resource` as `std::unique_ptr`.
 - Shared utilities:
   - Base64 decoding extracted to `src/common/base64.*`
   - JSON “require” helpers extracted to `src/common/json_require.h`
+- `SimpleWorldGenerator` implementing `WorldDataReader` for procedural worlds.
+- `WorldPersistenceService` with load-or-generate policy (generate-only for now) and a `CreateFromServices()` factory.
 
 🚧 Not implemented yet (still required for this task)
-- A `WorldGenerator` strategy (`WorldDataReader`) for procedural generation.
-- A “persistence service” that performs startup load-or-generate and runtime save/load orchestration.
 - Saving pipeline:
   - `WorldDataWriter` contract + `WorldSaver` to extract `GameWorld` into the format-neutral snapshot
   - `JsonFileStorage` (writer) to encode blobs + write JSON
@@ -212,11 +212,11 @@ To serialize and restore correctly, the save layer needs stable identifiers:
   - ⬜ Implement Base64 encode (decode exists).
 
 2. **Implement generation + startup policy (load-or-generate)**
-   - ⬜ Create `WorldGenerator` that implements `WorldDataReader` for procedural worlds.
-   - ⬜ Move current procedural logic from `GameWorld::NewWorld(int,int)` into `WorldGenerator`.
-   - ⬜ Create `WorldPersistenceService` and make startup use it:
+   - ✅ Create `SimpleWorldGenerator` that implements `WorldDataReader` for procedural worlds.
+   - ✅ Move current procedural logic from `GameWorld` factory into `SimpleWorldGenerator`.
+   - ✅ Create `WorldPersistenceService` and make startup use it:
      - `LoadWorld()` uses `JsonFileStorage` + `WorldLoadService`.
-     - `GenerateWorld()` uses `WorldGenerator` + `WorldLoadService`.
+     - `GenerateWorld()` uses `SimpleWorldGenerator` + `WorldLoadService`.
      - `LoadOrGenerate()` selects the strategy (try load; on failure generate).
      - `SaveWorld()` exists but is a stub/disabled until saving pipeline is completed.
 
@@ -241,7 +241,8 @@ To serialize and restore correctly, the save layer needs stable identifiers:
      - extra-tile data after the expected tile count is treated as an error.
 
 5. **Integrate with runtime**
-   - ⬜ Load-or-generate on game initialization via `WorldPersistenceService` using `saveFile` from config.
+   - ✅ Load-or-generate on game initialization via `WorldPersistenceService` (generate-only for now).
+   - ⬜ Use `saveFile` from config for load-or-generate when save/load is enabled.
    - ⬜ Add hotkeys:
      - `F5` save to `saveFile`
      - `F6` load from `saveFile`
