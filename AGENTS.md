@@ -5,6 +5,8 @@
 - Tasks live in `/docs/tasks/`. Update `docs/tasks/index.md` accordingly.
 - Use comments sparingly and only when necessary.
 - Use 2-space indentation for all code.
+- Use camelCase for variables and methods; no snake_case.
+- Prefer curly braces when calling object constructors for strict initialization.
 - Keep names clear; avoid abbreviations unless obvious.
 - Handle edge cases explicitly.
 - Preserve existing patterns unless they’re wrong.

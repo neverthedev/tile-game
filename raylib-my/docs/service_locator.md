@@ -12,11 +12,13 @@ The Service Locator pattern provides centralized access to application-wide reso
 @startuml
 package "services" {
   class ServiceLocator {
-    + {static} Initialize()
+    + {static} Initialize(GameConfig config)
     + {static} Shutdown()
     + {static} LoadResources(Graphics&)
     + {static} GetTilesManager() : TilesManager&
+    + {static} GetConfig() : GameConfig&
     - {static} tilesManager : unique_ptr<TilesManager>
+    - {static} gameConfig : unique_ptr<GameConfig>
   }
 
   class TilesManager {
@@ -31,6 +33,7 @@ package "game" {
   class Game
   class GameInterface
   class GameWorld
+  class WorldPersistenceService
   class DecorationMenu
 }
 
@@ -38,10 +41,15 @@ package "tiles" {
   class WorldTile
   class WorldTileTerrainType
 }
+package "config" {
+  class GameConfig
+}
 
 ServiceLocator --> TilesManager : owns
+ServiceLocator --> GameConfig : owns
 GameWorld ..> ServiceLocator : uses
 Game ..> ServiceLocator : initializes
+WorldPersistenceService ..> ServiceLocator : uses
 
 TilesManager --> WorldTileTerrainType : manages
 TilesManager ..> WorldTile : creates
@@ -64,11 +72,13 @@ end note
 ```plantuml
 @startuml
 class ServiceLocator <<singleton>> {
-  + {static} Initialize()
+  + {static} Initialize(GameConfig config)
   + {static} Shutdown()
   + {static} LoadResources(Graphics&)
   + {static} GetTilesManager() : TilesManager&
+  + {static} GetConfig() : GameConfig&
   - {static} tilesManager : unique_ptr<TilesManager>
+  - {static} gameConfig : unique_ptr<GameConfig>
 }
 
 class TilesManager {
@@ -81,19 +91,27 @@ class TilesManager {
 }
 
 class GameWorld {
-  + NewWorld(int, int) : GameWorld
-  - initializeGrid()
+  - InitializeGrid()
   - grid : vector<unique_ptr<WorldTile>>
 }
+
+class WorldPersistenceService {
+  + {static} CreateFromServices(): WorldPersistenceService
+  + LoadOrGenerate(): std::unique_ptr<GameWorld>
+}
+
+class GameConfig
 
 class Graphics {
   + LoadTexture(string)
 }
 
 ServiceLocator o-- TilesManager : owns
+ServiceLocator o-- GameConfig : owns
 GameWorld .> ServiceLocator : <<uses>>
 TilesManager .> Graphics : <<uses>>
 GameWorld --> WorldTile : creates via TilesManager
+WorldPersistenceService .> ServiceLocator : <<uses>>
 @enduml
 ```
 
@@ -107,8 +125,11 @@ participant TilesManager
 participant Graphics
 participant GameInterface
 participant GameWorld
+participant WorldPersistenceService
+participant GameConfig
 
-Main -> ServiceLocator : Initialize()
+Main -> GameConfig : LoadFromFile()
+Main -> ServiceLocator : Initialize(config)
 activate ServiceLocator
 ServiceLocator -> TilesManager : new TilesManager()
 activate TilesManager
@@ -132,9 +153,17 @@ deactivate ServiceLocator
 
 Main -> GameInterface : new GameInterface()
 activate GameInterface
-GameInterface -> GameWorld : NewWorld(60, 80)
+GameInterface -> WorldPersistenceService : CreateFromServices()
+activate WorldPersistenceService
+WorldPersistenceService --> GameInterface : WorldPersistenceService
+deactivate WorldPersistenceService
+GameInterface -> WorldPersistenceService : LoadOrGenerate()
+activate WorldPersistenceService
+WorldPersistenceService -> WorldLoadService : BuildWorld()
+activate WorldLoadService
+WorldLoadService -> GameWorld : new GameWorld(width, height, tilesProvider)
 activate GameWorld
-GameWorld -> GameWorld : initializeGrid()
+GameWorld -> GameWorld : InitializeGrid()
 GameWorld -> ServiceLocator : GetTilesManager()
 activate ServiceLocator
 ServiceLocator --> GameWorld : TilesManager&
@@ -146,6 +175,8 @@ loop For each tile position
   deactivate TilesManager
 end
 deactivate GameWorld
+deactivate WorldLoadService
+deactivate WorldPersistenceService
 deactivate GameInterface
 
 note right of Main
@@ -167,7 +198,7 @@ participant ServiceLocator
 participant TilesManager
 participant WorldTile
 
-GameWorld -> GameWorld : initializeGrid()
+GameWorld -> GameWorld : InitializeGrid()
 activate GameWorld
 
 GameWorld -> ServiceLocator : GetTilesManager()
@@ -239,23 +270,16 @@ end note
 ### Getting TilesManager
 
 ```cpp
-void GameWorld::initializeGrid() {
-  auto& tilesManager = ServiceLocator::GetTilesManager();
-
-  for (int h = 0; h < MapHeight; ++h) {
-    for (int w = 0; w < MapWidth; ++w) {
-      auto tile = tilesManager.NewTile("Deep Water", {w, h});
-      grid.push_back(std::move(tile));
-    }
-  }
-}
+auto persistence = WorldPersistenceService::CreateFromServices();
+auto world = persistence.LoadOrGenerate();
 ```
 
 ### Initialization in Main
 
 ```cpp
 int main() {
-  ServiceLocator::Initialize();
+  auto config = GameConfig::LoadFromFile("config/config.json");
+  ServiceLocator::Initialize(config);
 
   Graphics graphics{1024, 768, 64, 32, "Game", 60};
   graphics.InitScreen();
