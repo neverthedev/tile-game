@@ -6,4 +6,5 @@
 
 namespace Base64 {
   std::vector<uint8_t> Decode(const std::string& input);
+  std::string Encode(const std::vector<uint8_t>& input);
 }

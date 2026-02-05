@@ -131,15 +131,31 @@ package "WorldPersistence" as WorldPersistencePackage #LightGreen {
   }
 
   interface WorldDataReader {
-    Provides world data for loading.
-    Different implementations:
-    - file
-    - generator
+    Contract for load data source (rought details).
+    Provides metadata + row-major tile stream.
+    ----
+    + ReadMeta(): WorldMeta
+    + BeginTileScan(): void
+    + NextTile(): WorldTileData?
   }
 
   interface WorldDataWriter {
-    Sink for saving world data.
-    Typical implementation: file.
+    Contract for save data sink.
+    Serialize world to the set of rough data
+    to store.
+    Receives metadata + tiles stream.
+    ----
+    + WriteMeta(const WorldMeta&): void
+    + BeginTileWrite(): void
+    + WriteTile(const WorldTileData&): void
+    + EndTileWrite(): void
+  }
+
+  class WorldSaveService {
+    Extracts world data from GameWorld and writes it via WorldDataWriter.
+    ----
+    + <b>constructor</b> WorldSaveService(const TilesManager& tiles, WorldDataReader& reader)
+    + SaveWorld(const GameWorld& world): void
   }
 
   class WorldLoadService {
@@ -148,10 +164,6 @@ package "WorldPersistence" as WorldPersistencePackage #LightGreen {
     ----
     + <b>constructor</b> WorldLoadService(const TilesManager& tiles, WorldDataReader& reader, WorldBuilder worldBuilder)
     + BuildWorld(): std::unique_ptr<GameWorld>
-  }
-
-  class WorldSaver {
-    Extracts world data from GameWorld and writes it via WorldDataWriter.
   }
 
   class JsonFileStorage {
@@ -174,18 +186,18 @@ package "WorldPersistence" as WorldPersistencePackage #LightGreen {
   }
 
   WorldPersistenceService --> WorldLoadService
-  WorldPersistenceService --> WorldSaver
+  WorldPersistenceService --> WorldSaveService
 
   WorldLoadService ..> WorldDataReader
   TilesManager ..> WorldLoadService
-  WorldSaver ..> WorldDataWriter
+  WorldSaveService ..> WorldDataWriter
 
   WorldDataReader <|-- JsonFileStorage
   WorldDataWriter <|-- JsonFileStorage
   WorldDataReader <|-- SimpleWorldGenerator
 
   WorldPersistenceService .up.> GameWorld
-  WorldSaver .left.> TilesManager
+  WorldSaveService .left.> TilesManager
 
   note right of WorldPersistenceService
     Selects WorldDataReader strategy:
@@ -292,7 +304,14 @@ class JsonFileStorage {
 }
 WorldDataReader <|.. JsonFileStorage
 
-class "nlohmann::json" as NlohmannJson <<library>>
+class "nlohmann::json" as NlohmannJson <<library>> {
+  + {static} parse(const std::string&): json
+  + contains(const std::string& key) const: bool
+  + at(const std::string& key) const: const json&
+  + is_object() const: bool
+  + is_number_integer() const: bool
+  + get<T>() const: T
+}
 class Base64 <<codec>> {
   + Decode(const std::string& input): std::vector<uint8_t>
 }
@@ -320,6 +339,117 @@ WorldDataReader <|.. SimpleWorldGenerator
 @enduml
 ```
 
+### World Saver Interface
+
+```plantuml
+@startuml
+top to bottom direction
+
+interface WorldSaveService {
+  Extracts snapshot data from GameWorld and streams it to WorldDataWriter.
+  ----
+  + SaveWorld(const GameWorld& world): void
+}
+
+interface WorldDataWriter {
+  Format-neutral snapshot writer.
+  Owns write lifecycle for meta + row-major tile stream.
+  ----
+  + WriteMeta(const WorldMeta& meta): void
+  + BeginTileWrite(): void
+  + WriteTile(const WorldTileData& tile): void
+  + EndTileWrite(): void
+}
+
+class GameWorld {
+  + MapWidth: int
+  + MapHeight: int
+  + GetTile(index: int): const WorldTile&
+  + GetCamera(): const GameCamera&
+}
+
+class WorldTile {
+  + TerrainTypeName(): const std::string&
+  + Decoration(): const WorldTileDecoration*
+  + Resource(): const WorldTileResource*
+}
+
+class WorldTileDecoration {
+  + Name(): const std::string&
+  + State(): uint32
+}
+
+class WorldTileResource {
+  + Name(): const std::string&
+  + Volume(): uint32
+}
+
+class CameraState {
+  + offset: Position2D
+  + target: Position2D
+  + rotation: float
+  + zoom: float
+}
+
+class WorldMeta {
+  + width: int
+  + height: int
+  + tileTypeNamesById[]: string
+  + decorationNamesById[]: string
+  + resourceNamesById[]: string
+  + camera: CameraState?
+}
+
+class WorldTileData {
+  + tileTypeId: uint16
+  + decorationTypeId: uint16
+  + resourceTypeId: uint16
+  + resourceVolume: uint32?
+  + decorationState: uint32?
+}
+class TilesManager {
+  + TileTypeNames(): std::vector<std::string>
+  + DecorationTypeByName(const std::string&): WorldDecorationType
+  + ResourceTypeByName(const std::string&): ResourceType
+}
+
+class JsonFileStorage {
+  Implements WorldDataWriter.
+  Handles JSON + Base64 encode + writer-side validation.
+  ----
+  + WriteMeta(const WorldMeta&): void
+  + BeginTileWrite(): void
+  + WriteTile(const WorldTileData&): void
+  + EndTileWrite(): void
+}
+
+class "nlohmann::json" as NlohmannJson <<library>> {
+  + {static} object(): json
+  + operator[](const std::string& key): json&
+  + dump(int indent = -1) const: std::string
+}
+class Base64 <<codec>> {
+  + Encode(const std::vector<uint8_t>&): std::string
+}
+
+GameWorld <.. WorldSaveService
+TilesManager <. WorldSaveService
+WorldSaveService <. WorldTile: < read tiles \n list
+WorldSaveService ..> WorldDataWriter
+GameWorld *-- WorldTile
+WorldTile ..> WorldTileDecoration
+WorldTile ..> WorldTileResource
+WorldDataWriter ..> WorldMeta
+WorldDataWriter ..> WorldTileData
+WorldMeta ..> CameraState
+
+WorldDataWriter <|.. JsonFileStorage
+JsonFileStorage ..> NlohmannJson: serialize/write
+JsonFileStorage ..> Base64: encode blobs
+
+@enduml
+```
+
 #### Contract Notes (for WorldDataReader)
 
 - `ReadMeta()` must fully describe the world dimensions and provide id->name lookup arrays for tile/decor/resource ids.
@@ -328,6 +458,23 @@ WorldDataReader <|.. SimpleWorldGenerator
   - If `resourceTypeId == 0`, `resourceVolume` must be omitted/empty.
   - If `decorationTypeId == 0`, `decorationState` must be omitted/empty.
 - Errors should be actionable (e.g., “unknown tileTypeId=7 at index 1234”).
+
+#### Contract Notes (for WorldDataWriter / WorldSaveService)
+
+- `WriteMeta()` must be called before `BeginTileWrite()`.
+- `WriteTile()` must be called exactly `width * height` times in <b>row-major</b> order.
+- `WriteTile()` packing contract:
+  - `decorationTypeId == 0` => `decorationState` must be empty.
+  - `resourceTypeId == 0` => `resourceVolume` must be empty.
+  - non-zero ids must have corresponding `decorationState`/`resourceVolume`.
+- `EndTileWrite()` finalizes storage (e.g., JSON serialization + file write).
+- `WorldSaveService` validates names against `TilesManager` and emits actionable errors on unknown tile/decoration/resource names.
+- Current implementation uses two passes over tiles:
+  - pass 1: collect/validate type names to build sorted, stable id maps,
+  - pass 2: emit row-major tile ids and packed state arrays.
+- This can be reduced to one pass by either:
+  - buffering tile data in memory, then building sorted maps and writing arrays, or
+  - assigning ids on first encounter (deterministic by scan order, but ids shift with world edits).
 
 ### Startup (Load-or-Generate)
 

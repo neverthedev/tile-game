@@ -8,8 +8,10 @@
 #include "../update_components/world_component.h"
 #include "../services/service_locator.h"
 
+#include "json_file_storage.h"
 #include "simple_world_generator.h"
 #include "world_load_service.h"
+#include "world_save_service.h"
 
 WorldPersistenceService::WorldPersistenceService(const GameConfig& cfg, const TilesManager& tilesMngr):
   config { cfg },
@@ -34,8 +36,10 @@ std::unique_ptr<GameWorld> WorldPersistenceService::GenerateWorld() {
   return loader.BuildWorld();
 }
 
-void WorldPersistenceService::SaveWorld(const GameWorld&) {
-  throw GameError("World save is not available yet. Save/load pipeline is still in progress.");
+void WorldPersistenceService::SaveWorld(const GameWorld& world) {
+  JsonFileStorage storage { config.SaveFile };
+  WorldSaveService saveService { tilesManager, storage };
+  saveService.SaveWorld(world);
 }
 
 std::unique_ptr<GameWorld> WorldPersistenceService::BuildWorldWithTiles(

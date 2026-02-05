@@ -60,7 +60,7 @@ std::unique_ptr<WorldTile> WorldLoadService::ProvideTile(int x, int y) const {
       throw GameError("Missing decoration type name for decorationTypeId="
         + std::to_string(tileData.decorationTypeId));
     }
-    tile->Decoration = BuildDecoration(decorationName);
+    tile->SetDecoration(BuildDecoration(decorationName));
   }
 
   if (tileData.resourceTypeId != 0) {
@@ -76,7 +76,7 @@ std::unique_ptr<WorldTile> WorldLoadService::ProvideTile(int x, int y) const {
       throw GameError("Missing resource type name for resourceTypeId="
         + std::to_string(tileData.resourceTypeId));
     }
-    tile->Resource = BuildResource(resourceName, *tileData.resourceVolume);
+    tile->SetResource(BuildResource(resourceName, *tileData.resourceVolume));
   }
 
   return tile;

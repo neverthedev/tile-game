@@ -30,7 +30,7 @@ Provide a stable, versioned save/load format that can round-trip:
 - Optional: camera view state (offset/target/rotation/zoom)
 - Save/load should be reachable via config + hotkeys (see Runtime Integration).
 
-## Current Progress (as of January 31, 2026)
+## Current Progress (as of February 4, 2026)
 
 ✅ Implemented (loading pipeline)
 - `WorldDataReader` contract + DTOs (`WorldMeta`, `WorldTileData`, `CameraState`).
@@ -52,15 +52,28 @@ Provide a stable, versioned save/load format that can round-trip:
 - `SimpleWorldGenerator` implementing `WorldDataReader` for procedural worlds.
 - `WorldPersistenceService` with load-or-generate policy (generate-only for now) and a `CreateFromServices()` factory.
 
+✅ Implemented (saving pipeline)
+- `WorldDataWriter` contract.
+- `WorldSaveService` that extracts `GameWorld` into the format-neutral snapshot and streams it to `WorldDataWriter`.
+- `JsonFileStorage` writer side:
+  - validates `WriteMeta()`/`BeginTileWrite()`/`WriteTile()`/`EndTileWrite()` contract,
+  - validates id/state presence consistency,
+  - serializes packed arrays to Base64 and writes JSON.
+- Base64 encode support in `src/common/base64.*`.
+- Stable save-side identifiers:
+  - `WorldTileTerrainType::Name()`,
+  - `WorldTile::TerrainTypeName()`,
+  - `WorldTile::Decoration()` / `WorldTile::Resource()` (non-owning const pointers),
+  - `WorldTileDecoration::Name()` / `State()`,
+  - `WorldTileResource::Name()` / `Volume()`.
+- Save path in config:
+  - `game.saveFile` field added to `GameConfig` and `config/config.json`.
+- `WorldPersistenceService::SaveWorld()` is wired through `WorldSaveService` + `JsonFileStorage` using `config.SaveFile`.
+
 🚧 Not implemented yet (still required for this task)
-- Saving pipeline:
-  - `WorldDataWriter` contract + `WorldSaver` to extract `GameWorld` into the format-neutral snapshot
-  - `JsonFileStorage` (writer) to encode blobs + write JSON
 - Runtime integration:
-  - add config field `game.saveFile` (default `saves/world.json`)
+  - `LoadWorld()` is still disabled; `LoadOrGenerate()` still generates only.
   - `F5` save, `F6` load (and world swap in `GameInterface` without dangling `GameArea` references)
-- Saving-side identifiers:
-  - a stable way to read tile type name from a `WorldTile` (to build the type maps)
 
 ### Proposed File Format (JSON, versioned)
 
@@ -208,17 +221,17 @@ To serialize and restore correctly, the save layer needs stable identifiers:
 1. **Define format-neutral contract + JSON IO**
   - ✅ `WorldDataReader` + DTOs (`WorldMeta`, `WorldTileData`, `CameraState`).
   - ✅ `JsonFileStorage` reader (LoadFromJson + ValidateLoadedData, Base64 decode).
-  - ⬜ Add `WorldDataWriter` interface and implement writer side in `JsonFileStorage`.
-  - ⬜ Implement Base64 encode (decode exists).
+  - ✅ `WorldDataWriter` interface and writer side in `JsonFileStorage`.
+  - ✅ Base64 encode.
 
 2. **Implement generation + startup policy (load-or-generate)**
    - ✅ Create `SimpleWorldGenerator` that implements `WorldDataReader` for procedural worlds.
    - ✅ Move current procedural logic from `GameWorld` factory into `SimpleWorldGenerator`.
    - ✅ Create `WorldPersistenceService` and make startup use it:
-     - `LoadWorld()` uses `JsonFileStorage` + `WorldLoadService`.
+     - `LoadWorld()` will use `JsonFileStorage` + `WorldLoadService` (pending).
      - `GenerateWorld()` uses `SimpleWorldGenerator` + `WorldLoadService`.
-     - `LoadOrGenerate()` selects the strategy (try load; on failure generate).
-     - `SaveWorld()` exists but is a stub/disabled until saving pipeline is completed.
+     - `LoadOrGenerate()` currently generates only (load-first policy pending).
+     - `SaveWorld()` is implemented via `WorldSaveService`.
 
 3. **Serialize GameWorld → WorldSave**
    - Iterate tiles in a deterministic order (row-major).
@@ -232,8 +245,8 @@ To serialize and restore correctly, the save layer needs stable identifiers:
        - packed volume array (`u32`, Base64) for `WorldTileResource::Volume()` only where `resourceId != 0`
      - decoration state fields:
        - packed decoration state array (`u32`, Base64) only where `decorationId != 0`
-     - optional camera state
-   - ⬜ Not implemented (requires stable “tile type name” getter on `WorldTile` / terrain type).
+     - camera state
+   - ✅ Implemented.
 
 4. **Restore WorldSave → GameWorld**
    - ✅ Implemented via `WorldLoadService` + `JsonFileStorage`.
@@ -242,12 +255,13 @@ To serialize and restore correctly, the save layer needs stable identifiers:
 
 5. **Integrate with runtime**
    - ✅ Load-or-generate on game initialization via `WorldPersistenceService` (generate-only for now).
-   - ⬜ Use `saveFile` from config for load-or-generate when save/load is enabled.
+   - ✅ Add `saveFile` in config and use it for `SaveWorld`.
+   - ⬜ Use `saveFile` in `LoadWorld` / load-first startup path.
    - ⬜ Add hotkeys:
      - `F5` save to `saveFile`
      - `F6` load from `saveFile`
    - ⬜ Implement safe world swap in `GameInterface` (update `GameArea` references).
-   - ⬜ Ensure `saves/` directory exists when saving.
+   - ⬜ Ensure save directory exists when saving.
 
 6. **Add format versioning strategy**
    - ✅ `saveVersion` required and validated on load.
@@ -271,22 +285,23 @@ To serialize and restore correctly, the save layer needs stable identifiers:
 - `raylib-my/src/world_tiles/resources/resource.h`
 - `raylib-my/src/world_tiles/decorations/decoration.h`
 - `raylib-my/src/world_persistence/world_data_reader.h` (new)
+- `raylib-my/src/world_persistence/world_data_writer.h` (new)
 - `raylib-my/src/world_persistence/json_file_storage.h` (new)
 - `raylib-my/src/world_persistence/json_file_storage.cpp` (new)
 - `raylib-my/src/world_persistence/world_load_service.h` (new)
 - `raylib-my/src/world_persistence/world_load_service.cpp` (new)
+- `raylib-my/src/world_persistence/world_save_service.h` (new)
+- `raylib-my/src/world_persistence/world_save_service.cpp` (new)
 - `raylib-my/src/common/base64.h` (new)
 - `raylib-my/src/common/base64.cpp` (new)
 - `raylib-my/src/common/json_require.h` (new)
+- `raylib-my/src/world_tiles/tile_terrain_type.h`
+- `raylib-my/src/world_tiles/tile_terrain_type.cpp`
 
 ---
 
-## Open Questions (Discuss Before Implementation)
+## Open Questions (Remaining)
 
-1. Should “world save” include camera state (view), or only world simulation state?
-2. What’s the canonical identifier for a tile type: terrain name, numeric ID, or something else?
-3. Base64-in-JSON (single file) vs a sidecar binary file referenced by JSON (smaller + faster)?
-4. Confirm `u16 little-endian` is OK for v1, and whether we should attempt `u8` when tileTypes count ≤ 256.
-5. Do we need autosave / periodic saves, or only manual save/load for now?
-6. For decorations: what does `decorationStates` represent for v1 (or should we omit it until decoration state exists)?
-7. For resources: do we need to persist more than volume (e.g. initialVolume), or is `volume` enough for v1?
+1. Do we need autosave / periodic saves, or only manual save/load for now?
+2. Should we keep JSON+Base64 only for v1, or add optional compression in this task?
+3. How should migration be handled once `saveVersion` changes (v2+)?

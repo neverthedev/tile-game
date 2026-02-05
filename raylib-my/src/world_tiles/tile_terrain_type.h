@@ -17,6 +17,7 @@ class WorldTileTerrainType {
 
 public:
   WorldTileTerrainType(std::string, float, bool, std::string, Rectangle2D);
+  const std::string& Name() const;
   WorldTile* NewTile(Position2D) const;
   ~WorldTileTerrainType();
   void LoadTexture(ResourcesSystem& resources);

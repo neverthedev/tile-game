@@ -43,6 +43,7 @@ GameConfig GameConfig::LoadFromJson(const std::string& json_text) {
 
   const json& display = JsonRequire::Object(j, "display", throw_runtime);
   const json& world = JsonRequire::Object(j, "world", throw_runtime);
+  const json& game = JsonRequire::Object(j, "game", throw_runtime);
 
   GameConfig config;
   config.ScreenWidth = JsonRequire::Field<int>(display, "screenWidth", throw_runtime);
@@ -55,6 +56,7 @@ GameConfig GameConfig::LoadFromJson(const std::string& json_text) {
   config.TileHeight = JsonRequire::Field<float>(world, "tileHeight", throw_runtime);
   config.WorldWidth = JsonRequire::Field<int>(world, "worldWidth", throw_runtime);
   config.WorldHeight = JsonRequire::Field<int>(world, "worldHeight", throw_runtime);
+  config.SaveFile = JsonRequire::Field<std::string>(game, "saveFile", throw_runtime);
 
   config.Validate();
   return config;
@@ -75,6 +77,9 @@ std::string GameConfig::ToJson() const {
     {"worldWidth", WorldWidth},
     {"worldHeight", WorldHeight}
   };
+  j["game"] = {
+    {"saveFile", SaveFile}
+  };
   return j.dump(2);
 }
 
@@ -93,5 +98,8 @@ void GameConfig::Validate() const {
   }
   if (WorldWidth <= 0 || WorldHeight <= 0) {
     throw std::runtime_error("World dimensions must be positive.");
+  }
+  if (SaveFile.empty()) {
+    throw std::runtime_error("Save file path must not be empty.");
   }
 }

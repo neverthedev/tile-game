@@ -55,3 +55,39 @@ std::vector<uint8_t> Base64::Decode(const std::string& input) {
 
   return out;
 }
+
+std::string Base64::Encode(const std::vector<uint8_t>& input) {
+  static const char* alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  std::string out;
+  out.reserve(((input.size() + 2) / 3) * 4);
+
+  size_t i = 0;
+  while (i + 2 < input.size()) {
+    uint32_t trio = (static_cast<uint32_t>(input[i]) << 16)
+      | (static_cast<uint32_t>(input[i + 1]) << 8)
+      | static_cast<uint32_t>(input[i + 2]);
+    out.push_back(alphabet[(trio >> 18) & 0x3F]);
+    out.push_back(alphabet[(trio >> 12) & 0x3F]);
+    out.push_back(alphabet[(trio >> 6) & 0x3F]);
+    out.push_back(alphabet[trio & 0x3F]);
+    i += 3;
+  }
+
+  const size_t remaining = input.size() - i;
+  if (remaining == 1) {
+    uint32_t duo = static_cast<uint32_t>(input[i]) << 16;
+    out.push_back(alphabet[(duo >> 18) & 0x3F]);
+    out.push_back(alphabet[(duo >> 12) & 0x3F]);
+    out.push_back('=');
+    out.push_back('=');
+  } else if (remaining == 2) {
+    uint32_t duo = (static_cast<uint32_t>(input[i]) << 16)
+      | (static_cast<uint32_t>(input[i + 1]) << 8);
+    out.push_back(alphabet[(duo >> 18) & 0x3F]);
+    out.push_back(alphabet[(duo >> 12) & 0x3F]);
+    out.push_back(alphabet[(duo >> 6) & 0x3F]);
+    out.push_back('=');
+  }
+
+  return out;
+}
