@@ -1,5 +1,7 @@
 #include "world_persistence_service.h"
 
+#include <iostream>
+
 #include "../common/game_error.h"
 #include "../config/game_config.h"
 #include "../services/tiles_manager.h"
@@ -23,11 +25,18 @@ WorldPersistenceService WorldPersistenceService::CreateFromServices() {
 }
 
 std::unique_ptr<GameWorld> WorldPersistenceService::LoadOrGenerate() {
+  try {
+    return LoadWorld();
+  } catch (const std::exception& ex) {
+    std::cerr << "Failed to load world from " << config.SaveFile << ": " << ex.what() << std::endl;
+  }
   return GenerateWorld();
 }
 
 std::unique_ptr<GameWorld> WorldPersistenceService::LoadWorld() {
-  throw GameError("World load is not available yet. Save/load pipeline is still in progress.");
+  JsonFileStorage storage { config.SaveFile };
+  WorldLoadService loader { tilesManager, storage, BuildWorldWithTiles };
+  return loader.BuildWorld();
 }
 
 std::unique_ptr<GameWorld> WorldPersistenceService::GenerateWorld() {

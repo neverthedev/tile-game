@@ -1,9 +1,11 @@
 #include "game_error.h"
 
+#include <utility>
+
 GameError::GameError(std::string msg):
-    message { msg }
+  std::runtime_error(std::move(msg))
 {}
 
 std::string GameError::Message() const {
-    return message;
+  return std::string(what());
 }

@@ -16,4 +16,7 @@ public:
   static constexpr Key KEY_D = 68;
   static constexpr Key KEY_S = 83;
   static constexpr Key KEY_W = 87;
+
+  static constexpr Key KEY_F5 = 294;
+  static constexpr Key KEY_F6 = 295;
 };

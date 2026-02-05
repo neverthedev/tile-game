@@ -1,11 +1,15 @@
 #include "game_interface.h"
 
+#include <exception>
+#include <iostream>
+
 #include "common/position_2d.h"
 #include "common/rectangle_2d.h"
 #include "graphics/collision_system.h"
 #include "graphics/input_system.h"
 #include "graphics/render_system.h"
 #include "common/game_error.h"
+#include "common/keyboard_2d.h"
 #include "world_persistence/world_persistence_service.h"
 
 // TODO: Doesn't follow component pattern, consider to refactor
@@ -54,6 +58,22 @@ void GameInterface::RebuildAreas() {
 }
 
 void GameInterface::HandleInput(InputSystem& input, CollisionSystem& collision) {
+  if (input.IsKeyPressed(Keyboard2D::KEY_F5)) {
+    try {
+      WorldPersistenceService::CreateFromServices().SaveWorld(*gameWorld);
+    } catch (const std::exception& ex) {
+      std::cerr << "Failed to save world: " << ex.what() << std::endl;
+    }
+  }
+
+  if (input.IsKeyPressed(Keyboard2D::KEY_F6)) {
+    try {
+      ReplaceWorld(WorldPersistenceService::CreateFromServices().LoadWorld());
+    } catch (const std::exception& ex) {
+      std::cerr << "Failed to load world: " << ex.what() << std::endl;
+    }
+  }
+
   Position2D mouse = input.GetMousePosition();
 
   // Iterate in reverse priority order (highest priority first)

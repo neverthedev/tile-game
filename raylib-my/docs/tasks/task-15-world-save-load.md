@@ -1,7 +1,7 @@
 # TASK-15: Save/Restore World State to/from File
 
 **Priority:** 🟡 High
-**Status:** 🚧 IN PROGRESS
+**Status:** ✅ DONE (v1 complete)
 **Estimated Effort:** Medium-High
 
 ---
@@ -30,7 +30,7 @@ Provide a stable, versioned save/load format that can round-trip:
 - Optional: camera view state (offset/target/rotation/zoom)
 - Save/load should be reachable via config + hotkeys (see Runtime Integration).
 
-## Current Progress (as of February 4, 2026)
+## Current Progress (as of February 6, 2026)
 
 ✅ Implemented (loading pipeline)
 - `WorldDataReader` contract + DTOs (`WorldMeta`, `WorldTileData`, `CameraState`).
@@ -50,7 +50,7 @@ Provide a stable, versioned save/load format that can round-trip:
   - Base64 decoding extracted to `src/common/base64.*`
   - JSON “require” helpers extracted to `src/common/json_require.h`
 - `SimpleWorldGenerator` implementing `WorldDataReader` for procedural worlds.
-- `WorldPersistenceService` with load-or-generate policy (generate-only for now) and a `CreateFromServices()` factory.
+- `WorldPersistenceService` with load-or-generate policy (try load, fallback to generate) and a `CreateFromServices()` factory.
 
 ✅ Implemented (saving pipeline)
 - `WorldDataWriter` contract.
@@ -69,11 +69,12 @@ Provide a stable, versioned save/load format that can round-trip:
 - Save path in config:
   - `game.saveFile` field added to `GameConfig` and `config/config.json`.
 - `WorldPersistenceService::SaveWorld()` is wired through `WorldSaveService` + `JsonFileStorage` using `config.SaveFile`.
+- Save writer ensures the parent directory exists before writing the save file.
 
-🚧 Not implemented yet (still required for this task)
-- Runtime integration:
-  - `LoadWorld()` is still disabled; `LoadOrGenerate()` still generates only.
-  - `F5` save, `F6` load (and world swap in `GameInterface` without dangling `GameArea` references)
+✅ Complete (v1 scope)
+- Save/load pipeline is implemented with config + hotkeys.
+- Runtime world swap is safe in `GameInterface`.
+- Save directory is created on write.
 
 ### Proposed File Format (JSON, versioned)
 
@@ -228,9 +229,9 @@ To serialize and restore correctly, the save layer needs stable identifiers:
    - ✅ Create `SimpleWorldGenerator` that implements `WorldDataReader` for procedural worlds.
    - ✅ Move current procedural logic from `GameWorld` factory into `SimpleWorldGenerator`.
    - ✅ Create `WorldPersistenceService` and make startup use it:
-     - `LoadWorld()` will use `JsonFileStorage` + `WorldLoadService` (pending).
+     - ✅ `LoadWorld()` uses `JsonFileStorage` + `WorldLoadService`.
      - `GenerateWorld()` uses `SimpleWorldGenerator` + `WorldLoadService`.
-     - `LoadOrGenerate()` currently generates only (load-first policy pending).
+     - ✅ `LoadOrGenerate()` tries load first and falls back to generate.
      - `SaveWorld()` is implemented via `WorldSaveService`.
 
 3. **Serialize GameWorld → WorldSave**
@@ -254,18 +255,18 @@ To serialize and restore correctly, the save layer needs stable identifiers:
      - extra-tile data after the expected tile count is treated as an error.
 
 5. **Integrate with runtime**
-   - ✅ Load-or-generate on game initialization via `WorldPersistenceService` (generate-only for now).
+   - ✅ Load-or-generate on game initialization via `WorldPersistenceService` (load-first).
    - ✅ Add `saveFile` in config and use it for `SaveWorld`.
-   - ⬜ Use `saveFile` in `LoadWorld` / load-first startup path.
-   - ⬜ Add hotkeys:
+   - ✅ Use `saveFile` in `LoadWorld` / load-first startup path.
+   - ✅ Add hotkeys:
      - `F5` save to `saveFile`
      - `F6` load from `saveFile`
-   - ⬜ Implement safe world swap in `GameInterface` (update `GameArea` references).
-   - ⬜ Ensure save directory exists when saving.
+   - ✅ Implement safe world swap in `GameInterface` (update `GameArea` references).
+   - ✅ Ensure save directory exists when saving.
 
 6. **Add format versioning strategy**
    - ✅ `saveVersion` required and validated on load.
-   - ⬜ Add migration strategy (if/when v2 happens).
+   - ➕ Migration strategy deferred to v2+.
 
 ---
 
@@ -300,8 +301,8 @@ To serialize and restore correctly, the save layer needs stable identifiers:
 
 ---
 
-## Open Questions (Remaining)
+## Future Enhancements (Out of v1 scope)
 
-1. Do we need autosave / periodic saves, or only manual save/load for now?
-2. Should we keep JSON+Base64 only for v1, or add optional compression in this task?
-3. How should migration be handled once `saveVersion` changes (v2+)?
+1. Autosave / periodic saves.
+2. Optional compression for JSON+Base64.
+3. Migration strategy for `saveVersion` v2+.
