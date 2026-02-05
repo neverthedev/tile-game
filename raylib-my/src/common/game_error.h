@@ -1,12 +1,10 @@
 #pragma once
 
+#include <stdexcept>
 #include <string>
 
-class GameError {
+class GameError : public std::runtime_error {
 public:
-    GameError(std::string);
-    std::string Message() const;
-
-private:
-    std::string message;
+  explicit GameError(std::string);
+  std::string Message() const;
 };

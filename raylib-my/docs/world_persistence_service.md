@@ -131,7 +131,7 @@ package "WorldPersistence" as WorldPersistencePackage #LightGreen {
   }
 
   interface WorldDataReader {
-    Contract for load data source (rought details).
+    Contract for load data source (rough details).
     Provides metadata + row-major tile stream.
     ----
     + ReadMeta(): WorldMeta
@@ -154,7 +154,7 @@ package "WorldPersistence" as WorldPersistencePackage #LightGreen {
   class WorldSaveService {
     Extracts world data from GameWorld and writes it via WorldDataWriter.
     ----
-    + <b>constructor</b> WorldSaveService(const TilesManager& tiles, WorldDataReader& reader)
+    + <b>constructor</b> WorldSaveService(const TilesManager& tiles, WorldDataWriter& writer)
     + SaveWorld(const GameWorld& world): void
   }
 
@@ -211,12 +211,18 @@ package "WorldPersistence" as WorldPersistencePackage #LightGreen {
     which pulls tile data from WorldDataReader (stream)
     and uses TilesManager to create actual tile objects.
   end note
+
+  note bottom of WorldPersistenceService
+    Hotkeys are handled in GameInterface:
+    - F5: SaveWorld()
+    - F6: LoadWorld() + ReplaceWorld()
+  end note
 }
 
 @enduml
 ```
 
-### World Loader Interface
+### World Load Service Details
 
 ```plantuml
 @startuml
@@ -339,15 +345,16 @@ WorldDataReader <|.. SimpleWorldGenerator
 @enduml
 ```
 
-### World Saver Interface
+### World Save Service Details
 
 ```plantuml
 @startuml
 top to bottom direction
 
-interface WorldSaveService {
+class WorldSaveService {
   Extracts snapshot data from GameWorld and streams it to WorldDataWriter.
   ----
+  + <b>constructor</b> WorldSaveService(const TilesManager& tiles, WorldDataWriter& writer)
   + SaveWorld(const GameWorld& world): void
 }
 
