@@ -16,6 +16,10 @@ bool WorldTileTerrainType::emptyTextureSrcRect() {
   return (textureSrcRect.width == 0) || (textureSrcRect.height == 0);
 }
 
+const std::string& WorldTileTerrainType::Name() const {
+  return name;
+}
+
 void WorldTileTerrainType::LoadTexture(ResourcesSystem& resources) {
   ImageHandle fullImage = resources.LoadImage(texurePath.c_str());
   if (!emptyTextureSrcRect()) {

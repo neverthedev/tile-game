@@ -53,7 +53,15 @@ WorldTile& GameWorld::GetTile(int index) {
   return *grid[index];
 }
 
+const WorldTile& GameWorld::GetTile(int index) const {
+  return *grid[index];
+}
+
 GameCamera& GameWorld::GetCamera() {
+  return *camera;
+}
+
+const GameCamera& GameWorld::GetCamera() const {
   return *camera;
 }
 

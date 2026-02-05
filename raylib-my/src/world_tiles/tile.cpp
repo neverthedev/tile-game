@@ -14,8 +14,8 @@ WorldTile::WorldTile(
   Pos { pos },
   TerrainType { type },
   Dirty { true },
-  Decoration { nullptr },
-  Resource { nullptr },
+  decoration { nullptr },
+  resource { nullptr },
   MowementSpeed { 0 }
 {}
 
@@ -25,6 +25,26 @@ TextureHandle WorldTile::Texture() const {
 
 ImageHandle WorldTile::TextureImage() const {
   return TerrainType.TextureImage();
+}
+
+const std::string& WorldTile::TerrainTypeName() const {
+  return TerrainType.Name();
+}
+
+void WorldTile::SetDecoration(std::unique_ptr<WorldTileDecoration> newDecoration) {
+  decoration = std::move(newDecoration);
+}
+
+void WorldTile::SetResource(std::unique_ptr<WorldTileResource> newResource) {
+  resource = std::move(newResource);
+}
+
+const WorldTileDecoration* WorldTile::Decoration() const {
+  return decoration.get();
+}
+
+const WorldTileResource* WorldTile::Resource() const {
+  return resource.get();
 }
 
 WorldTile::~WorldTile() {}

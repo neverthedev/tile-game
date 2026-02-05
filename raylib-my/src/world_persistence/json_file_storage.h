@@ -6,9 +6,10 @@
 #include <vector>
 
 #include "world_data_reader.h"
+#include "world_data_writer.h"
 
-class JsonFileStorage final : public WorldDataReader {
- public:
+class JsonFileStorage final : public WorldDataReader, public WorldDataWriter {
+public:
   explicit JsonFileStorage(std::string);
   ~JsonFileStorage() override;
 
@@ -20,11 +21,18 @@ class JsonFileStorage final : public WorldDataReader {
   WorldMeta ReadMeta() override;
   void BeginTileScan() override;
   std::optional<WorldTileData> NextTile() override;
+  void WriteMeta(const WorldMeta&) override;
+  void BeginTileWrite() override;
+  void WriteTile(const WorldTileData&) override;
+  void EndTileWrite() override;
 
- private:
+private:
   void LoadFromFile();
   void LoadFromJson(const std::string&);
   void ValidateLoadedData() const;
+  void SaveToFile() const;
+  std::string SaveToJson() const;
+  void ValidateMetaForWrite(const WorldMeta&) const;
 
   std::string path;
   bool initialized;
@@ -41,4 +49,9 @@ class JsonFileStorage final : public WorldDataReader {
   size_t tileIndex;
   size_t resourceVolumeIndex;
   size_t decorationStateIndex;
+
+  bool writerInitialized;
+  bool writerInProgress;
+  size_t expectedTileCount;
+  size_t writtenTileCount;
 };

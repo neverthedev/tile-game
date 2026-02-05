@@ -29,7 +29,9 @@ public:
 
   WorldTile& operator[](Position2D);
   WorldTile& GetTile(int);
+  const WorldTile& GetTile(int) const;
   GameCamera& GetCamera();
+  const GameCamera& GetCamera() const;
   ~GameWorld();
 
 private:

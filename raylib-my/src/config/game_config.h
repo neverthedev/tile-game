@@ -19,6 +19,9 @@ public:
   int WorldWidth = 60;
   int WorldHeight = 80;
 
+  // Save/load settings
+  std::string SaveFile = "saves/world.json";
+
   static GameConfig LoadFromFile(const std::string& path);
   void SaveToFile(const std::string& path) const;
 
